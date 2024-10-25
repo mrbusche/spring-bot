@@ -19,8 +19,8 @@ public class ContentResponseConverter extends AbstractResponseConverter {
 
 	@Override
 	public void accept(Object t, ChatHandlerExecutor u) {
-		if (t instanceof Content) {
-			Message m = t instanceof Message ? (Message) t : Message.of((Content) t);
+		if (t instanceof Content content) {
+			Message m = t instanceof Message m1 ? m1 : Message.of(content);
 			MessageResponse out = new MessageResponse(u.action().getAddressable(), m);
 			rh.accept(out);
 		}

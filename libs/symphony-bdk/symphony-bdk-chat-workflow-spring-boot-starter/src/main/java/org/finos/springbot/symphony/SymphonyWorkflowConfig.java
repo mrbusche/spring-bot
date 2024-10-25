@@ -35,9 +35,9 @@ import org.finos.springbot.workflow.response.templating.AbstractMarkupTemplatePr
 import org.finos.springbot.workflow.response.templating.Markup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ResourceLoader;
@@ -59,13 +59,13 @@ import com.symphony.bdk.spring.SymphonyBdkAutoConfiguration;
  * @author moffrob
  *
  */
-@Configuration
+@AutoConfiguration
 @Import({
-	SymphonyBdkAutoConfiguration.class,
-	ChatWorkflowConfig.class, 
-	FreemarkerTypeConverterConfig.class, 
-	SymphonyContentConfig.class,
-	SymphonyDataHandlerCofig.class})
+		SymphonyBdkAutoConfiguration.class,
+		ChatWorkflowConfig.class,
+		FreemarkerTypeConverterConfig.class,
+		SymphonyContentConfig.class,
+		SymphonyDataHandlerCofig.class})
 @Profile(value = "symphony")
 public class SymphonyWorkflowConfig {
 	

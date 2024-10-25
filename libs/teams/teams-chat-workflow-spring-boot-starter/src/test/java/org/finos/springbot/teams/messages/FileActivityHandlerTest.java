@@ -11,12 +11,10 @@ import org.finos.springbot.teams.MockTeamsConfiguration;
 import org.finos.springbot.teams.TeamsWorkflowConfig;
 import org.finos.springbot.workflow.data.DataHandlerConfig;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.microsoft.bot.builder.TurnContext;
 import com.microsoft.bot.schema.teams.FileConsentCardResponse;
@@ -24,7 +22,6 @@ import com.microsoft.bot.schema.teams.FileUploadInfo;
 
 @SpringBootTest(classes = { MockTeamsConfiguration.class, TeamsWorkflowConfig.class, DataHandlerConfig.class })
 @ActiveProfiles("teams")
-@ExtendWith(SpringExtension.class)
 public class FileActivityHandlerTest {
 
 	
