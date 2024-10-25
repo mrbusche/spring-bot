@@ -1,6 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.finos.springbot</groupId>
@@ -45,7 +43,7 @@
 		<module>demos/todo-bot</module>
 		<module>demos/claim-bot</module>
 		<module>demos/rooms-bot</module>
-
+		
 		<module>libs/chat-workflow-coverage</module>
 	</modules>
 
@@ -71,10 +69,10 @@
 		<graalvm.version>23.0.3</graalvm.version>
 		<symphony-bdk.version>3.0.0</symphony-bdk.version>
 		<!--<mimepull.version>1.9.15</mimepull.version>-->
-		<!--<thymeleaf.version>2.7.0</thymeleaf.version>-->
-		<azure-core-http-netty.version>1.9.1</azure-core-http-netty.version>
-		<nimbus-jose-jwt.version>9.9.1</nimbus-jose-jwt.version>
-		<httpclient.version>4.5.13</httpclient.version>
+		<!--<thymeleaf.version>2.7.0</thymeleaf.version>-->	
+		<azure-core-http-netty.version>1.9.1</azure-core-http-netty.version>	
+		<nimbus-jose-jwt.version>9.9.1</nimbus-jose-jwt.version>	
+		<httpclient.version>4.5.13</httpclient.version>			
 		<corenlp.version>4.5.7</corenlp.version>
 		<azure-storage-blob.version>12.25.3</azure-storage-blob.version>
 	</properties>
@@ -150,22 +148,11 @@
 					<excludedScopes>provided,system</excludedScopes>
 				</configuration>
 			</plugin>
-			<plugin>
-				<groupId>org.openrewrite.maven</groupId>
-				<artifactId>rewrite-maven-plugin</artifactId>
-				<version>5.43.0</version>
-				<configuration>
-					<exportDatatables>true</exportDatatables>
-					<activeRecipes>
-						<recipe>org.openrewrite.maven.RemoveRedundantDependencyVersions</recipe>
-					</activeRecipes>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 
 	<profiles>
-		<!-- using this profile creates Javadocs, etc. and signs the jars for upload
+		<!-- using this profile creates Javadocs, etc. and signs the jars for upload 
 			to maven central -->
 		<profile>
 			<id>symphony-release</id>
@@ -228,8 +215,7 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<!-- SpringBoot 2.7.0 pulls 1.10 version of below lib which is compiled with Java11 and
-			hence causes errors
+			<!-- SpringBoot 2.7.0 pulls 1.10 version of below lib which is compiled with Java11 and hence causes errors
 			<dependency>
 				<groupId>org.jvnet.mimepull</groupId>
 				<artifactId>mimepull</artifactId>
@@ -241,13 +227,13 @@
 				<artifactId>jackson-databind</artifactId>
 				<version>${jackson-databind.version}</version>
 			</dependency>
-
+			
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-core</artifactId>
 				<version>${jackson.version}</version>
 			</dependency>
-
+			
 			<dependency>
 				<groupId>com.fasterxml.jackson.core</groupId>
 				<artifactId>jackson-annotations</artifactId>
@@ -269,26 +255,24 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-
-			<!-- currently required with teams.version=1.14.3, as 1.13 of protonpack is missing a
-			license
+			
+ 			<!-- currently required with teams.version=1.14.3, as 1.13 of protonpack is missing a license
  			     remove if teams upgrades to 1.16 or beyond -->
 			<dependency>
-				<groupId>com.codepoetics</groupId>
-				<artifactId>protonpack</artifactId>
-				<version>1.16</version>
+			    <groupId>com.codepoetics</groupId>
+			    <artifactId>protonpack</artifactId>
+			    <version>1.16</version>
 			</dependency>
-
-			<!-- fixing CVE-2022-1471.  If we upgrade to a new version of spring-boot-dependencies
-			this
+			
+			<!-- fixing CVE-2022-1471.  If we upgrade to a new version of spring-boot-dependencies this 
 			  may no longer be needed -->
 			<dependency>
-				<groupId>org.yaml</groupId>
-				<artifactId>snakeyaml</artifactId>
-				<version>2.2</version>
-			</dependency>
-
-
+			    <groupId>org.yaml</groupId>
+			    <artifactId>snakeyaml</artifactId>
+			    <version>2.2</version>
+			</dependency> 
+				
+				
 		</dependencies>
 	</dependencyManagement>
 
@@ -296,6 +280,6 @@
 		<repository>
 			<id>nexus</id>
 			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
+        </repository>
 	</distributionManagement>
 </project>
