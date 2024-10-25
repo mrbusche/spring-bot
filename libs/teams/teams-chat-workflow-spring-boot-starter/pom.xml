@@ -104,9 +104,8 @@
 		</dependency>
 		
 		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-	    	<artifactId>httpclient</artifactId>
-	    	<version>4.5.13</version> <!-- Replace with property -->
+			<groupId>org.apache.httpcomponents.client5</groupId>
+	    	<artifactId>httpclient5</artifactId> <!-- Replace with property -->
 		</dependency>
 					
 		<!-- removed Vulnerability in bot connector(4.14.3) ->

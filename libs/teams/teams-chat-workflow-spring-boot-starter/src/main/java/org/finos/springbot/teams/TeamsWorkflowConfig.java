@@ -46,10 +46,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.DefaultResourceLoader;
@@ -70,15 +70,15 @@ import com.microsoft.bot.schema.ChannelAccount;
  * @author moffrob
  *
  */
-@Configuration
+@AutoConfiguration
 @Import({
-	ChatWorkflowConfig.class, 
-	TeamsContentConfig.class,
-	ThymeleafEngineConfig.class,
-	AdaptiveCardConverterConfig.class,
-	ThymeleafConverterConfig.class,
-	TeamsConversationsConfig.class
-	})
+		ChatWorkflowConfig.class,
+		TeamsContentConfig.class,
+		ThymeleafEngineConfig.class,
+		AdaptiveCardConverterConfig.class,
+		ThymeleafConverterConfig.class,
+		TeamsConversationsConfig.class
+})
 @Profile("teams")
 public class TeamsWorkflowConfig implements InitializingBean {
 		

@@ -403,8 +403,8 @@ public abstract class ChannelServiceController {
  @GetMapping("v3/conversations/{conversationId}/pagedmembers")
  public CompletableFuture<ResponseEntity<PagedMembersResult>> getConversationPagedMembers(
      @PathVariable String conversationId,
-     @RequestParam(name = "pageSize", defaultValue = "-1") int pageSize,
-     @RequestParam(name = "continuationToken") String continuationToken,
+     @RequestParam(defaultValue = "-1") int pageSize,
+     @RequestParam String continuationToken,
      @RequestHeader(value = "Authorization", defaultValue = "") String authHeader
  ) {
      return  handler.handleGetConversationPagedMembers(authHeader, conversationId, pageSize, continuationToken)

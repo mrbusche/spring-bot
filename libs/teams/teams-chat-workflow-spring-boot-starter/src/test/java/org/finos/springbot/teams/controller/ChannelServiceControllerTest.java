@@ -15,14 +15,12 @@ import org.finos.springbot.workflow.response.MessageResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.microsoft.bot.builder.ChannelServiceHandler;
 import com.microsoft.bot.schema.Activity;
@@ -37,7 +35,6 @@ import com.microsoft.bot.schema.Transcript;
 
 @SpringBootTest(classes = { MockTeamsConfiguration.class, TeamsWorkflowConfig.class, DataHandlerConfig.class })
 @ActiveProfiles("teams")
-@ExtendWith(SpringExtension.class)
 public class ChannelServiceControllerTest {
 
 	@Mock

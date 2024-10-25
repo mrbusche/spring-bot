@@ -12,7 +12,6 @@ import org.finos.springbot.workflow.response.MessageResponse;
 import org.finos.springbot.workflow.response.handlers.ResponseHandlers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +19,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.microsoft.bot.connector.rest.ErrorResponseException;
 import com.microsoft.bot.schema.Activity;
@@ -35,7 +33,6 @@ import retrofit2.Response;
 
 @SpringBootTest(classes = { MockTeamsConfiguration.class, TeamsWorkflowConfig.class, DataHandlerConfig.class })
 @ActiveProfiles("teams")
-@ExtendWith(SpringExtension.class)
 public class TeamsResponseHandlerTest {
 
 	@MockBean
