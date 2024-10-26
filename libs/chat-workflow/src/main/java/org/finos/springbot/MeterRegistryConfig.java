@@ -37,12 +37,12 @@ public class MeterRegistryConfig {
 
 	private Iterable<Tag> getTags(ProceedingJoinPoint pjp) {
 		pjp.getStaticPart();
-		
+
 		List<Tag> tags = new LinkedList<>();
 		Object[] args = pjp.getArgs();
 		Arrays.asList(args).stream().filter(Objects::nonNull).forEach(a -> {
 			if (a instanceof Chat room) {
-				tags.add(Tag.of("Chat", room.getName()));
+				tags.add(Tag.of("Chat", room.name()));
 			} else if (a instanceof User user) {
 				tags.add(Tag.of("User", user.getName()));
 			}

@@ -17,7 +17,7 @@ import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.util.ErrorHandler;
 
 public class TableDeleteRows extends AbstractTableActionConsumer {
-	
+
 	SpelExpressionParser spel = new SpelExpressionParser();
 
 	public static final String ACTION_SUFFIX = "table-delete-rows";
@@ -26,8 +26,8 @@ public class TableDeleteRows extends AbstractTableActionConsumer {
 	public TableDeleteRows(ErrorHandler errorHandler, ResponseHandlers rh) {
 		super(errorHandler, rh);
 	}
-	
-	
+
+
 	// nosemgrep
 	@SuppressWarnings("unchecked")
 	@Override
@@ -36,7 +36,7 @@ public class TableDeleteRows extends AbstractTableActionConsumer {
 		if (verb == null) {
 			return;
 		}
-		
+
 		if (verb.endsWith(ACTION_SUFFIX)) {
 			Object data = ea.getData().get(WorkResponse.OBJECT_KEY);
 
@@ -46,17 +46,17 @@ public class TableDeleteRows extends AbstractTableActionConsumer {
 			Expression e = spel.parseExpression(tableLocation);
 			List<Object> table = (List<Object>) e.getValue(data);
 			Object deleteStructure = ((FormSubmission)ea.getFormData()).structure;
-			
+
 			String mapLocation = convertSpelToMapSpel(tableLocation);
 			e = spel.parseExpression(mapLocation);
 			List<Integer> toRemove = getRowsToDelete((List<Object>) e.getValue(deleteStructure));
-			
+
 			for (Integer i : toRemove) {
 				table.remove((int) i);
 			}
-			
+
 			WorkResponse out = new WorkResponse(ea.getAddressable(), data, WorkMode.EDIT);
-			
+
 			rh.accept(out);
 		}
 	}
@@ -64,7 +64,7 @@ public class TableDeleteRows extends AbstractTableActionConsumer {
 	private String convertSpelToMapSpel(String tableLocation) {
 		return String.join(".", Arrays.stream(tableLocation.split("\\."))
 			.map(i -> i.startsWith("[") ? i : "['" + i + "']")
-			.toArray(i -> new String[i]));
+			.toArray(String[]::new));
 	}
 
 	@SuppressWarnings("unchecked")

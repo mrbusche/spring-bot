@@ -46,8 +46,8 @@ public class FileActivityHandler extends MessageActivityHandler {
 	@Override
 	protected CompletableFuture<Void> onTeamsFileConsentAccept(TurnContext turnContext,
 			FileConsentCardResponse fileConsentCardResponse) {
-		LOG.info("onTeamsFileConsentAccept called...");	
-		
+		LOG.info("onTeamsFileConsentAccept called...");
+
 		return upload(fileConsentCardResponse)
 				.thenCompose(result -> !result.result() ? fileUploadFailed(turnContext, result.value())
 						: fileUploadCompleted(turnContext, fileConsentCardResponse));
@@ -56,7 +56,7 @@ public class FileActivityHandler extends MessageActivityHandler {
 	@Override
 	protected CompletableFuture<Void> onTeamsFileConsentDecline(TurnContext turnContext,
 			FileConsentCardResponse fileConsentCardResponse) {
-		LOG.info("onTeamsFileConsentDecline called...");	
+		LOG.info("onTeamsFileConsentDecline called...");
 		Map<String, String> context = (Map<String, String>) fileConsentCardResponse.getContext();
 
 		Activity reply = MessageFactory
@@ -108,11 +108,11 @@ public class FileActivityHandler extends MessageActivityHandler {
 						LOG.error("Exception occured while reading steam.. ignore this error " + e);
 					}
 				}
-				result.set(new ResultPair<String>(true, null));
-				
+				result.set(new ResultPair<>(true, null));
+
 			} catch (Throwable t) {
 				t.printStackTrace();
-				result.set(new ResultPair<String>(false, t.getLocalizedMessage()));
+				result.set(new ResultPair<>(false, t.getLocalizedMessage()));
 			} finally {
 				if (connection != null) {
 
@@ -125,9 +125,9 @@ public class FileActivityHandler extends MessageActivityHandler {
 	}
 
 	private CompletableFuture<Void> fileUploadFailed(TurnContext turnContext, String error) {
-		
-		LOG.info("fileUploadFailed called with error {}" , error);	
-		
+
+		LOG.info("fileUploadFailed called with error {}" , error);
+
 		Activity reply = MessageFactory.text("<b>File upload failed.</b> Error: <pre>" + error + "</pre>");
 		reply.setTextFormat(TextFormatTypes.XML);
 		return turnContext.sendActivityBlind(reply);
@@ -142,9 +142,9 @@ public class FileActivityHandler extends MessageActivityHandler {
 
 	private CompletableFuture<Void> fileUploadCompleted(TurnContext turnContext,
 			FileConsentCardResponse fileConsentCardResponse) {
-		
+
 		LOG.info("file Upload Completed with unique id {} ", fileConsentCardResponse.getUploadInfo().getUniqueId());
-		
+
 		FileInfoCard downloadCard = new FileInfoCard();
 		downloadCard.setUniqueId(fileConsentCardResponse.getUploadInfo().getUniqueId());
 		downloadCard.setFileType(fileConsentCardResponse.getUploadInfo().getFileType());

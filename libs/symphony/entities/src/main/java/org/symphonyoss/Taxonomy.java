@@ -1,6 +1,7 @@
 package org.symphonyoss;
 
 import java.util.List;
+import java.util.Objects;
 
 public class Taxonomy {
 
@@ -43,11 +44,11 @@ public class Taxonomy {
 		if (id == null) {
 			if (other.id != null)
 				return false;
-		} else if (!taxonomyPartMatch(id, other.id)) 
+		} else if (!taxonomyPartMatch(id, other.id))
 			return false;
 		return true;
 	}
-	
+
 	protected boolean taxonomyPartMatch(List<TaxonomyElement> a, List<TaxonomyElement> b) {
 		for (TaxonomyElement tea : a) {
 			for (TaxonomyElement teb : b) {
@@ -56,18 +57,18 @@ public class Taxonomy {
 				}
 			}
 		}
-		
+
 		return false;
 	}
 
 	protected String fromTaxonomy(Class<?> class1) {
 		return getId().stream()
-			.filter(t -> t != null)
+			.filter(Objects::nonNull)
 			.filter(t -> class1.isAssignableFrom(t.getClass()))
 			.findFirst()
-			.map(te -> te.getValue())
+			.map(TaxonomyElement::getValue)
 			.orElse(null);
 	}
 
-	
+
 }

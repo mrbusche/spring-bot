@@ -6,9 +6,9 @@ import org.finos.springbot.workflow.annotations.Work;
 
 @Work
 public class Filter implements Predicate<String> {
-	
+
 	String toMatch;
-	
+
 	public enum Type { INCLUDE, EXCLUDE }
 
 	private Type usage = Type.EXCLUDE;
@@ -32,13 +32,10 @@ public class Filter implements Predicate<String> {
 	@Override
 	public boolean test(String t) {
 		boolean contains = t.toLowerCase().contains(toMatch.toLowerCase());
-		switch (getUsage()) {
-		case INCLUDE:
-			return contains;
-		case EXCLUDE:
-		default: 
-			return !contains;
-		}
+        return switch (getUsage()) {
+            case INCLUDE -> contains;
+            default -> !contains;
+        };
 	}
-	
+
 }

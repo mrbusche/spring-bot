@@ -11,15 +11,14 @@ public class EntityMapResolverFactory implements WorkflowResolverFactory {
 
 	@Override
 	public WorkflowResolver createResolver(ChatHandlerExecutor che) {
-		
+
 		return new WorkflowResolver() {
-			
+
 			@Override
 			public Optional<Object> resolve(MethodParameter mp) {
-				if (che.action() instanceof FormAction) {
+				if (che.action() instanceof FormAction fa) {
 					Class<?> t = mp.getParameterType();
-					FormAction fa = (FormAction) che.action();
-					Map<String, Object> entityMap = fa.getData();
+                    Map<String, Object> entityMap = fa.getData();
 					return entityMap.values().stream()
 							.filter(v -> v.getClass().isAssignableFrom(t))
 							.findFirst();
@@ -27,7 +26,7 @@ public class EntityMapResolverFactory implements WorkflowResolverFactory {
 					return Optional.empty();
 				}
 			}
-			
+
 			@Override
 			public boolean canResolve(MethodParameter mp) {
 				return resolve(mp).isPresent();

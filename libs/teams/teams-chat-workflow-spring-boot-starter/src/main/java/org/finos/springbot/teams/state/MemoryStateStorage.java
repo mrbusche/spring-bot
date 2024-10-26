@@ -13,10 +13,10 @@ import org.finos.springbot.workflow.data.EntityJsonConverter;
 import org.javatuples.Pair;
 
 public class MemoryStateStorage extends AbstractStateStorage {
-	
+
 	Map<String, String> store = new HashMap<>();
 	Map<String, List<Pair<String, String>>> tagIndex = new HashMap<>();
-	
+
 	private EntityJsonConverter ejc;
 
 	public MemoryStateStorage(EntityJsonConverter ejc) {
@@ -29,14 +29,14 @@ public class MemoryStateStorage extends AbstractStateStorage {
 		store.put(file, ejc.writeValue(data));
 		if ((tags != null) && (tags.size() > 0)){
 			List<Pair<String, String>> pairtags = tags.entrySet().stream()
-				.map(e -> new Pair<String, String>(e.getKey(), e.getValue()))
+				.map(e -> new Pair<>(e.getKey(), e.getValue()))
 				.collect(Collectors.toList());
 			tagIndex.put(file, pairtags);
 		} else {
 			throw new TeamsException("Cannot persist data to "+file+" - no tags");
 
 		}
-		
+
 	}
 
 	@Override
@@ -45,46 +45,44 @@ public class MemoryStateStorage extends AbstractStateStorage {
 			.filter(e -> matchEntry(e, tags))
 			.map(e -> ejc.readValue(store.get(e.getKey())))
 			.collect(Collectors.toList());
-			
+
 		if ((singleResultOnly) && (out.size() > 0)) {
 			out = out.subList(0, 1);
 		}
-		
+
 		return out;
 	}
 
 	private boolean matchEntry(Entry<String, List<Pair<String, String>>> e, List<Filter> tags) {
-		for (Iterator<Filter> iterator = tags.iterator(); iterator.hasNext();) {
-			Filter filter = (Filter) iterator.next();
-			
-			Pair<String, String> matched = getMatchedPair(e.getValue(), filter.key);
-			if (matched == null) {
-				return false;
-			} else {
-				if (!checkMatches(filter, matched.getValue1())) {
-					return false;
-				}
-			}
-		}
-		
+        for (Filter filter : tags) {
+            Pair<String, String> matched = getMatchedPair(e.getValue(), filter.key);
+            if (matched == null) {
+                return false;
+            } else {
+                if (!checkMatches(filter, matched.getValue1())) {
+                    return false;
+                }
+            }
+        }
+
 		return true;
 	}
 
 	private boolean checkMatches(Filter filter, String value) {
 		int cmp = filter.value.compareTo(value);
-		
+
 		if ((filter.operator.contains("=")) && (cmp == 0)) {
 			return true;
 		}
-			
+
 		if (filter.operator.contains(">") && (cmp < 0)) {
 			return true;
 		}
-		
+
 		if (filter.operator.contains("<") && (cmp > 0)) {
 			return true;
 		}
-		
+
 		return false;
 	}
 
@@ -94,7 +92,7 @@ public class MemoryStateStorage extends AbstractStateStorage {
 				return pair;
 			}
 		}
-		
+
 		return null;
 	}
 

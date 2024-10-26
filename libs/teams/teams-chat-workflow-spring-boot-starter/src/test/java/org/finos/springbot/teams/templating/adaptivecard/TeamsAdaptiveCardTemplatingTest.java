@@ -12,7 +12,6 @@ import java.util.stream.IntStream;
 
 import org.finos.springbot.teams.content.TeamsMultiwayChat;
 import org.finos.springbot.teams.content.TeamsUser;
-import org.finos.springbot.teams.templating.adaptivecard.AdaptiveCardConverterConfig;
 import org.finos.springbot.tests.templating.AbstractTemplatingTest;
 import org.finos.springbot.workflow.annotations.WorkMode;
 import org.finos.springbot.workflow.content.Addressable;
@@ -36,23 +35,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-@SpringBootTest(classes = { 
+@SpringBootTest(classes = {
 		AdaptiveCardConverterConfig.class
 })
 public class TeamsAdaptiveCardTemplatingTest extends AbstractTemplatingTest {
 
 	@Autowired
 	WorkTemplater<JsonNode> templater;
-	
+
 	ObjectMapper om;
-	
+
 	JavascriptSubstitution js = new JavascriptSubstitution();
-	
+
 	@Override
 	protected Addressable getTo() {
 		return new TeamsUser("abc1234", "Geoff Summersby", "aac123");
 	}
-	
+
 	@Override
 	protected Chat getChat() {
 		return new TeamsMultiwayChat("chatID123", "Some Chat Channel");
@@ -71,7 +70,7 @@ public class TeamsAdaptiveCardTemplatingTest extends AbstractTemplatingTest {
 
 	@Override
 	protected void testTemplating(WorkResponse workResponse, String testName) {
-	    try {		
+	    try {
 	    	// populate with at least one button
 	    	Map<String, Object> data = workResponse.getData();
 	    	ButtonList bl = (ButtonList) data.get(ButtonList.KEY);
@@ -80,39 +79,39 @@ public class TeamsAdaptiveCardTemplatingTest extends AbstractTemplatingTest {
 	    				Arrays.asList(new Button("test", Button.Type.ACTION, "Submit"))));
 	    	}
 
-	    	
+
 			// actual template
 			new File("target/tests").mkdirs();
 			JsonNode actualNode = templater.convert(workResponse.getFormClass(), translateMode(workResponse));
 			String actualJson = om.writerWithDefaultPrettyPrinter().writeValueAsString(actualNode);
 			System.out.println("ACTUAL  : " + actualJson);
-			
+
 	    	// expected template
 			String expectedJson = loadJson(testName+".json");
 			JsonNode expectedNode = om.readTree(expectedJson);
 			System.out.println("EXPECTED: " + expectedJson);
-			 
+
 			// write expected/actual
 			FileOutputStream out1 = new FileOutputStream("target/tests/"+testName+".json");
 			StreamUtils.copy(actualJson, StandardCharsets.UTF_8, out1);
 			FileOutputStream out1ex = new FileOutputStream("target/tests/"+testName+".expected.json");
 			StreamUtils.copy(expectedJson, StandardCharsets.UTF_8, out1ex);
-			
+
 			// write data
 			JsonNode _$root = om.valueToTree(workResponse.getData());
 			String dataJson = om.writerWithDefaultPrettyPrinter().writeValueAsString(_$root);
 			FileOutputStream out1data = new FileOutputStream("target/tests/"+testName+".data.json");
 			StreamUtils.copy(dataJson, StandardCharsets.UTF_8, out1data);
-			
+
 			// make sure the substitution works
 			ObjectNode dataOuter = om.createObjectNode();
 			dataOuter.set("$root", _$root);
 			String outerDataJson = om.writerWithDefaultPrettyPrinter().writeValueAsString(dataOuter);
 			System.out.println("COMBINED: "+js.singleThreadedEvalLoop(outerDataJson, actualJson));
-			
+
 			// do comparison
 			Assertions.assertEquals(expectedNode, actualNode);
-			
+
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -126,7 +125,7 @@ public class TeamsAdaptiveCardTemplatingTest extends AbstractTemplatingTest {
 	protected DropdownList createSomeUsers(int count) {
 		return new DropdownList(IntStream.range(0, count)
 				.mapToObj(i -> i == 0 ? getUser() : new TeamsUser("idu"+i, "Name of "+i, "aac"+i))
-				.map(tu -> new Item(tu.getKey(), tu.getName()))
+				.map(tu -> new Item(tu.key(), tu.getName()))
 				.collect(Collectors.toList()));
 	}
 
@@ -134,7 +133,7 @@ public class TeamsAdaptiveCardTemplatingTest extends AbstractTemplatingTest {
 	protected DropdownList createSomeChats(int count) {
 		return new DropdownList(IntStream.range(0, count)
 				.mapToObj(i -> i == 0 ? getChat() : new TeamsMultiwayChat("idc"+i, "Chat name of "+i))
-				.map(tu -> new Item(tu.getKey(), tu.getName()))
+				.map(tu -> new Item(tu.key(), tu.name()))
 				.collect(Collectors.toList()));
 	}
 

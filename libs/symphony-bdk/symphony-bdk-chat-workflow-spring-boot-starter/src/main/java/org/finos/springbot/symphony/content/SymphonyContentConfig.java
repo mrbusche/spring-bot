@@ -26,13 +26,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SymphonyContentConfig {
 
-	
+
 	@Bean
 	@ConditionalOnMissingBean
 	public MessageMLParser symphonyMessageMLParser() {
 		return new MessageMLParser();
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean
 	public SymphonyMarkupWriter symphonyMessageMLWriter() {
@@ -48,9 +48,9 @@ public class SymphonyContentConfig {
 				return Collections.singletonMap("style", "color: blue; margin: 15px;");
 			}
 		});
-		
+
 		out.add(CodeBlock.class, out.new SimpleTagWriter("code"));
-		
+
 		out.add(Word.class, out.new PlainWriter());
 		out.add(Table.class, out.new TableWriter());
 		out.add(Heading.class, out.new HeadingWriter("h"));
@@ -62,39 +62,39 @@ public class SymphonyContentConfig {
 			@Override
 			protected Map<String, String> getAttributes(Content t) {
 				SymphonyUser su = (SymphonyUser) t;
-				Map<String, String> out = new LinkedHashMap<String, String>();
+				Map<String, String> out = new LinkedHashMap<>();
 				if (su.getEmailAddress() != null) {
 					out.put("email", su.getEmailAddress());
 				}
-				
+
 				if (su.getUserId() != null) {
 					out.put("uid", su.getUserId());
 				}
-				
+
 				return out;
 			}
 		});
-		
+
 		out.add(CashTag.class, out.new SimpleTagWriter("cash") {
 
 			@Override
 			protected Map<String, String> getAttributes(Content t) {
 				return Collections.singletonMap("tag", ((CashTag)t).getName());
 			}
-			
+
 		});
-		
+
 		out.add(HashTag.class, out.new SimpleTagWriter("hash") {
 
 			@Override
 			protected Map<String, String> getAttributes(Content t) {
 				return Collections.singletonMap("tag", ((HashTag)t).getName());
 			}
-			
+
 		});
-		
-		
+
+
 		return out;
 	}
-	
+
 }

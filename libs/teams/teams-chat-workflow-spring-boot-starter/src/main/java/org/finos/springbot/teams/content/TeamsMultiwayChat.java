@@ -10,17 +10,17 @@ public class TeamsMultiwayChat implements Chat, TeamsChat {
 
 	private String key;
 	private String name;
-	
+
 	public TeamsMultiwayChat() {
 	}
-	
+
 	public TeamsMultiwayChat(String id, String name) {
 		this.key = id;
 		this.name = name;
 	}
 
 	@Override
-	public String getName() {
+	public String name() {
 		return name;
 	}
 
@@ -32,14 +32,14 @@ public class TeamsMultiwayChat implements Chat, TeamsChat {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof TeamsMultiwayChat chat) {
-			return this.key.equals(chat.getKey());
+			return this.key.equals(chat.key());
 		} else {
 			return false;
 		}
 	}
 
-	public String getKey() {
+	public String key() {
 		return key;
 	}
-	
+
 }

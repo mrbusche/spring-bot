@@ -23,63 +23,63 @@ import com.symphony.bdk.core.service.pagination.model.PaginationAttribute;
 import com.symphony.bdk.gen.api.model.MessageSearchQuery;
 import com.symphony.bdk.gen.api.model.V4Message;
 
-@SpringBootTest(classes = { 
-	SymphonyMockConfiguration.class, 
+@SpringBootTest(classes = {
+	SymphonyMockConfiguration.class,
 	SymphonyWorkflowConfig.class,
 })
 @ActiveProfiles(value = "symphony")
 public class HistoryTest {
-	
+
 	@Autowired
 	SymphonyHistory mh;
-	
+
 	@Autowired
 	EntityJsonConverter ejc;
-	
+
 	@MockBean
 	MessageService messagesApi;
 
 	@Test
 	public void testGetLast() {
 		TestObjects to = new TestObjects();
-		Mockito.when(messagesApi.searchMessages(Mockito.any(), Mockito.any())) 
+		Mockito.when(messagesApi.searchMessages(Mockito.any(), Mockito.any()))
 			.thenAnswer(a -> Arrays.asList(makeMessage(to)));
-		
+
 		TestObjects out = mh.getLastFromHistory(TestObjects.class, new SymphonyRoom("someroom", "abc123"))
-			.orElseThrow(() -> new RuntimeException());
-		
+			.orElseThrow(RuntimeException::new);
+
 		Assertions.assertEquals(out, to);
 		Assertions.assertFalse(out == to);
 	}
-	
+
 	@Test
 	public void testFindInHistory() {
-		
+
 		TestObjects one = new TestObjects();
 		TestObjects two = new TestObjects();
 		TestObjects three = new TestObjects();
 
-		Mockito.when(messagesApi.searchMessages(Mockito.any(), Mockito.any())) 
+		Mockito.when(messagesApi.searchMessages(Mockito.any(), Mockito.any()))
 			.thenAnswer(a -> Arrays.asList(makeMessage(one), makeMessage(two), makeMessage(three)));
-		
-		
+
+
 		List<TestObjects> out = mh.getFromHistory(
-				TestObjects.class, 
+				TestObjects.class,
 				new SymphonyRoom("someroom", "abc123"),
 				Instant.now().minus(10, ChronoUnit.DAYS));
-		
+
 		Assertions.assertEquals(3, out.size());
 		Assertions.assertEquals(one, out.getFirst());
 		Assertions.assertEquals(two, out.get(1));
 		Assertions.assertEquals(three, out.get(2));
-		
+
 		Mockito.verify(messagesApi).searchMessages(
 			Mockito.argThat(e -> {
 				MessageSearchQuery msq = (MessageSearchQuery) e;
 				return msq.getHashtag().equals(TestObjects.class.getCanonicalName().replace(".", "-").toLowerCase());
 			}),
 			Mockito.isA(PaginationAttribute.class));
-		
+
 	}
 
 

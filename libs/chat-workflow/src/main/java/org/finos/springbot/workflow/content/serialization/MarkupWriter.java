@@ -17,14 +17,14 @@ import org.springframework.web.util.HtmlUtils;
 
 /**
  * Converts {@link Content} classes into xml/html etc.  styles of markup.
- * 
+ *
  * @author rob@kite9.com
  *
  */
 public class MarkupWriter<C> implements BiFunction<Content, C, String> {
-	
+
 	Map<Class<? extends Content>, BiFunction<Content, C,String>> tagMap = new LinkedHashMap<>();
-	
+
 	public MarkupWriter(Map<Class<? extends Content>, BiFunction<Content, C, String>> tagMap) {
 		super();
 		this.tagMap = tagMap;
@@ -35,12 +35,12 @@ public class MarkupWriter<C> implements BiFunction<Content, C, String> {
 
 	@Override
 	public String apply(Content t, C c) {
-		if (t == null) { 
+		if (t == null) {
 			return "";
 		}
-		
+
 		BiFunction<Content, C, String> writer = findWriter(t);
-		
+
 		if (writer == null) {
 			return "";
 		} else {
@@ -54,20 +54,20 @@ public class MarkupWriter<C> implements BiFunction<Content, C, String> {
 			.map(c -> tagMap.get(c))
 			.findFirst().orElseGet(() -> null);
 	}
-	
+
 	public class PlainWriter implements BiFunction<Content, C, String> {
 
 		@Override
 		public String apply(Content t, C c) {
-			return " " + HtmlUtils.htmlEscape(t.getText())+ " ";		
+			return " " + HtmlUtils.htmlEscape(t.getText())+ " ";
 		}
-		
+
 	}
-	
+
 	public class SimpleTagWriter implements BiFunction<Content, C, String> {
 
 		String tag;
-		
+
 		public SimpleTagWriter(String tag) {
 			super();
 			this.tag = tag;
@@ -75,13 +75,13 @@ public class MarkupWriter<C> implements BiFunction<Content, C, String> {
 
 		@Override
 		public String apply(Content t, C c) {
-			return "<"+tag+formatAttributes(t)+">" + getContainedMarkup(t)+ "</"+tag+">";		
+			return "<"+tag+formatAttributes(t)+">" + getContainedMarkup(t)+ "</"+tag+">";
 		}
 
 		protected String getContainedMarkup(Content t) {
 			return HtmlUtils.htmlEscape(t.getText());
-		}	
-		
+		}
+
 		protected String formatAttributes(Content t) {
 			String out = getAttributes(t).entrySet().stream()
 				.map(e -> HtmlUtils.htmlEscape(e.getKey()) + "=\""+HtmlUtils.htmlEscape(e.getValue()) + "\"")
@@ -89,24 +89,24 @@ public class MarkupWriter<C> implements BiFunction<Content, C, String> {
 				.orElse("");
 			return StringUtils.hasText(out) ? " "+out : "";
 		}
-		
+
 		protected Map<String, String> getAttributes(Content t) {
 			return Collections.emptyMap();
 		}
 	}
-	
-	
+
+
 	public class OrderedTagWriter implements BiFunction<Content, C, String> {
-		
+
 		String tag;
 		BiFunction<Content, C, String> following;
-		
+
 		public OrderedTagWriter(String tag, BiFunction<Content, C, String> following) {
 			super();
 			this.tag = tag;
 			this.following = following;
 		}
-		
+
 		public OrderedTagWriter(String tag) {
 			super();
 			this.tag = tag;
@@ -114,11 +114,11 @@ public class MarkupWriter<C> implements BiFunction<Content, C, String> {
 
 		@Override
 		public String apply(Content t, C ctx) {
-			return "<"+getTagName(t)+">" + 
+			return "<"+getTagName(t)+">" +
 				((OrderedContent<?>)t).getContents().stream()
-					.map(c -> writeInner(c, ctx)) 
-					.reduce("", (a, b) -> a.trim() + " "+ b.trim()) + 
-					"</"+getTagName(t)+">";		
+					.map(c -> writeInner(c, ctx))
+					.reduce("", (a, b) -> a.trim() + " "+ b.trim()) +
+					"</"+getTagName(t)+">";
 		}
 
 		protected String getTagName(Content t) {
@@ -132,9 +132,9 @@ public class MarkupWriter<C> implements BiFunction<Content, C, String> {
 				return following.apply(c, ctx);
 			}
 		}
-		
+
 	}
-	
+
 	public class HeadingWriter extends OrderedTagWriter {
 
 		public HeadingWriter(String tag) {
@@ -149,16 +149,16 @@ public class MarkupWriter<C> implements BiFunction<Content, C, String> {
 				return tag;
 			}
 		}
-		
-		
-		
+
+
+
 	}
-	
+
 	public class TableWriter implements BiFunction<Content, C, String> {
 
 		@Override
 		public String apply(Content t, C c) {
-			return "<table><thead>" 
+			return "<table><thead>"
 				 + writeRow("th", ((Table) t).getColumnNames(), c)
 				 + "</thead><tbody>"
 				 + ((Table) t).getData().stream()
@@ -166,7 +166,7 @@ public class MarkupWriter<C> implements BiFunction<Content, C, String> {
 				 		.reduce("", (a, b) -> a.trim() + b.trim())
 				 +"</tbody></table>";
 		}
-		
+
 		private String writeRow(String tag, List<Content> row, C c) {
 			return "<tr>"
 				+ row.stream()
@@ -175,9 +175,9 @@ public class MarkupWriter<C> implements BiFunction<Content, C, String> {
 			 	+ "</tr>";
 		}
 	}
-	
+
 	public class LinkWriter extends SimpleTagWriter {
-		
+
 		public LinkWriter() {
 			super("a");
 		}
@@ -189,18 +189,18 @@ public class MarkupWriter<C> implements BiFunction<Content, C, String> {
 	}
 
 	public class ImageWriter extends SimpleTagWriter {
-		
+
 		public ImageWriter() {
 			super("img");
 		}
 
 		@Override
 		protected Map<String, String> getAttributes(Content t) {
-			return Collections.singletonMap("src", ((Image)t).getUrl());
+			return Collections.singletonMap("src", ((Image)t).url());
 		}
 	}
 
-	
+
 	public void add(Class<? extends Content> cl, BiFunction<Content, C, String> mapper) {
 		tagMap.put(cl, mapper);
 	}

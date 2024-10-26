@@ -37,25 +37,25 @@ import org.springframework.util.StringUtils;
 
 @Controller
 public class PollController {
-	
+
 	private static final String ANSWER_SUFFIX = "-a";
 
 	private static final String QUESTION_SUFFIX = "-q";
 
 	@Autowired
 	ResponseHandlers rh;
-	
+
 	@Autowired
 	AllHistory h;
-	
+
 	@Autowired
 	AllConversations rooms;
-	
+
 	@Autowired
 	TaskScheduler taskScheduler;
-	
+
 	@ChatRequest(value="poll", description = "Start A Poll")
-	@ChatResponseBody(workMode = WorkMode.EDIT) 
+	@ChatResponseBody(workMode = WorkMode.EDIT)
 	public PollCreateForm pollForm(Chat r) {
 		if (r == null) {
 			throw new RuntimeException("You can't create a poll in a 1-1 chat");
@@ -65,37 +65,37 @@ public class PollController {
 
 	@ChatButton(buttonText ="start", showWhen = WorkMode.EDIT, value = PollCreateForm.class)
 	public List<DataResponse> poll(
-			PollCreateForm cf, 
-			Chat r, 
+			PollCreateForm cf,
+			Chat r,
 			User a) {
 		int[] i = { 0 };
-		
-		List<String> options = Arrays.asList(cf.option1, cf.option2, cf.option3, cf.option4, cf.option5, cf.option6)	
+
+		List<String> options = Arrays.asList(cf.option1, cf.option2, cf.option3, cf.option4, cf.option5, cf.option6)
 				.stream()
-				.filter(s -> StringUtils.hasText(s))
+				.filter(StringUtils::hasText)
 				.collect(Collectors.toList());
-		
+
 		ButtonList buttons = new ButtonList(options.stream()
 		.map(s -> new Button(PollController.class,"poll"+(i[0]++), Type.ACTION, s))
 			.collect(Collectors.toList()));
-		
+
 		String id = UUID.randomUUID().toString();
 		id = "p"+id.substring(id.length()-6);
-	
-		Question p = new Question(cf.getQuestion(), options, id, a);	
+
+		Question p = new Question(cf.getQuestion(), options, id, a);
 		doScheduling(p, cf, r);
-		
+
 		MessageResponse out1 = createQuestionMessage(p, r, a);
 		WorkResponse out2 = createQuestionResponse(p, buttons, r);
 		return Arrays.asList(out1, out2);
 	}
-	
+
 	private static MessageResponse createQuestionMessage(Question q, Chat r, User u) {
 		String start = "can end the poll at any time by typing \"/end "+(q.id)+"\"";
 		Paragraph p2 = Paragraph.of(u, Word.of(start));
-				
-		Message m = Message.of(p2);		
-		return new MessageResponse(r, m);		
+
+		Message m = Message.of(p2);
+		return new MessageResponse(r, m);
 	}
 
 	private static WorkResponse createQuestionResponse(Question q, ButtonList buttons, Chat u) {
@@ -104,7 +104,7 @@ public class PollController {
 		out.getData().put(HeaderDetails.KEY, hd);
 		return out;
 	}
-	
+
 
 	private void doScheduling(Question p, PollCreateForm cf, Chat r) {
 		if (cf.isEndAutomatically() && (cf.getTimeUnit() != null)) {
@@ -114,31 +114,31 @@ public class PollController {
 				Result result = end(Word.of(p.getId()), r, h);
 				WorkResponse out = new WorkResponse(r, result, WorkMode.VIEW);
 				rh.accept(out);
-				
+
 			}, endTime);
 		}
 	}
 
 	@ChatRequest(value = "end {pollId}", description = "End a poll that you have started")
 	public Result end(@ChatVariable("pollId") Word pollId, Chat r, AllHistory h) {
-		
+
 		Question q = h.getLastFromHistory(Question.class, pollId.getText()+QUESTION_SUFFIX, r)
 				.orElseThrow(() -> new RuntimeException("Couldn't find poll with that tag"));
-		
+
 		List<Answer> responses = h.getFromHistory(Answer.class, pollId.getText()+ANSWER_SUFFIX, r, null);
-		
+
 		// make sure people only vote once
-		Set<User> seen = new HashSet<User>();
- 
+		Set<User> seen = new HashSet<>();
+
 		List<Integer> counts = new ArrayList<>(q.options.size());
-		
+
 		for (int i = 0; i < q.getOptions().size(); i++) {
 			counts.add(0);
 		}
-		
+
 		long totalResponses = responses.stream().mapToInt(a -> {
 				if (seen.add(a.getUser())) {
-					counts.set(a.getChoice(), counts.get(a.getChoice()) + 1);	
+					counts.set(a.getChoice(), counts.get(a.getChoice()) + 1);
 					return 1;
 				} else {
 					return 0;

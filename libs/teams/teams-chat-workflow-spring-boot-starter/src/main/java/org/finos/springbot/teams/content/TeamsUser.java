@@ -8,16 +8,16 @@ import org.finos.springbot.workflow.content.User;
 
 @Work(index = false)
 public final class TeamsUser implements User, TeamsMention, TeamsAddressable {
-	
+
 	public TeamsUser() {
 	}
-			
+
 	public TeamsUser(String id, String name, String aadObjectId) {
 		this.key = id;
 		this.name = name;
 		this.aadObjectId = aadObjectId;
 	}
-	
+
 	private String aadObjectId;
 	private String key;
 	private String name;
@@ -40,7 +40,7 @@ public final class TeamsUser implements User, TeamsMention, TeamsAddressable {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof TeamsUser user) {
-			return this.key.equals(user.getKey());
+			return this.key.equals(user.key());
 		} else {
 			return false;
 		}
@@ -51,10 +51,10 @@ public final class TeamsUser implements User, TeamsMention, TeamsAddressable {
 		return Tag.MENTION;
 	}
 
-	public String getKey() {
+	public String key() {
 		return key;
 	}
-	
+
 	public String getAadObjectId() {
 		return aadObjectId;
 	}
@@ -71,6 +71,6 @@ public final class TeamsUser implements User, TeamsMention, TeamsAddressable {
 		this.name = name;
 	}
 
-	
+
 
 }

@@ -13,7 +13,7 @@ import org.finos.springbot.workflow.annotations.Display;
  * General interface for performing some function against a field, with a given variable.
  */
 public interface WithField<X> {
-	
+
     String DEFAULT_FORMATTER_PATTERN = "(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])";
 
     public X apply(Field f, boolean editMode, Variable variable, WithType<X> contentHandler);
@@ -35,9 +35,7 @@ public interface WithField<X> {
 
     default String fieldNameDefaultFormatter(String fieldName) {
         return Arrays.stream(Optional.ofNullable(fieldName).orElse("").split(DEFAULT_FORMATTER_PATTERN))
-                .map(word -> {
-                    return null != word && !word.trim().isEmpty() ? Character.toUpperCase(word.charAt(0)) + word.substring(1) : "";
-                })
+                .map(word -> null != word && !word.trim().isEmpty() ? Character.toUpperCase(word.charAt(0)) + word.substring(1) : "")
                 .collect(Collectors.joining(" "));
     }
 }

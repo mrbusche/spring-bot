@@ -49,7 +49,7 @@ public class TimeFinderIT {
 
 	@Mock
 	AllHistory history;
-	
+
 	@Mock
 	AllConversations allConversations;
 
@@ -61,7 +61,7 @@ public class TimeFinderIT {
 
 	@InjectMocks
 	TimeFinder timefinder;
-	
+
 	private SimpleMessageAction getAction() {
 		SimpleMessageAction simpleMessageAction = new SimpleMessageAction(getAddressable(), getUser(), getMessage(),
 				null);
@@ -93,7 +93,7 @@ public class TimeFinderIT {
 			Assertions.assertEquals(r.getLocalTime(), LocalDateTime.of(year, month + 1, day, 21, 20, 0));
 		} catch (OutOfMemoryError e) {
 			// for some reason this happens when we run (sometimes) in github actions
-			// this is a workaround for this occasion.  Since we run tests locally, we shouldn't 
+			// this is a workaround for this occasion.  Since we run tests locally, we shouldn't
 			// see this on our own machines
 			return;
 		}
@@ -142,15 +142,7 @@ public class TimeFinderIT {
 	}
 
 	private Addressable getAddressable() {
-		Addressable a = new Addressable() {
-
-			@Override
-			public String getKey() {
-				return "testkey";
-			}
-
-		
-		};
+		Addressable a = () -> "testkey";
 		return a;
 
 	}

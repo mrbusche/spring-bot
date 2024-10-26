@@ -14,7 +14,7 @@ import org.springframework.validation.Validator;
 
 /**
  * This encapsulates server-side validation logic needed when forms are received.
- * 
+ *
  * @author rob@kite9.com
  *
  */
@@ -22,7 +22,7 @@ public class FormValidationProcessor {
 
 	private Validator v;
 	private ResponseHandlers rh;
-	
+
 	public FormValidationProcessor(Validator v, ResponseHandlers rh) {
 		super();
 		this.v = v;
@@ -31,11 +31,11 @@ public class FormValidationProcessor {
 
 	public FormAction validationCheck(String verb, Addressable from, Object form, Supplier<FormAction> callback) {
 		Errors e = ErrorHelp.createErrorHolder();
-		
+
 		if (validated(form, e)) {
 			return callback.get();
 		} else {
-			WorkResponse fr = new WorkResponse(from, form,  WorkMode.EDIT, 
+			WorkResponse fr = new WorkResponse(from, form,  WorkMode.EDIT,
 				ButtonList.of(new Button(verb, Button.Type.ACTION, "Retry")), convertErrorsToMap(e));
 			rh.accept(fr);
 			return null;
@@ -54,7 +54,7 @@ public class FormValidationProcessor {
 	public static ErrorMap convertErrorsToMap(Errors e) {
 		return e == null ? new ErrorMap() : new ErrorMap(e.getAllErrors().stream()
 			.map(err -> (FieldError) err)
-			.collect(Collectors.toMap(fe -> fe.getField(), fe -> ""+fe.getDefaultMessage())));
+			.collect(Collectors.toMap(FieldError::getField, fe -> ""+fe.getDefaultMessage())));
 	}
 
 

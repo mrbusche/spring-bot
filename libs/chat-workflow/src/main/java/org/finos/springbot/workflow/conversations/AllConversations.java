@@ -3,6 +3,7 @@ package org.finos.springbot.workflow.conversations;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -14,11 +15,11 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
 public class AllConversations implements Conversations<Chat, User>, ApplicationContextAware {
-	
+
 	private ApplicationContext ctx;
-	
+
 	private List<PlatformConversations<Chat, User>> delegates;
-	
+
 	@SuppressWarnings("unchecked")
 	protected List<PlatformConversations<Chat, User>> getDelegates() {
 		if (delegates == null) {
@@ -26,10 +27,10 @@ public class AllConversations implements Conversations<Chat, User>, ApplicationC
 				.map(s -> (PlatformConversations<Chat,User>) ctx.getBean(s))
 				.collect(Collectors.toList());
 		}
-		
+
 		return delegates;
 	}
-	
+
 
 	@Override
 	public Set<Addressable> getAllAddressables() {
@@ -49,7 +50,7 @@ public class AllConversations implements Conversations<Chat, User>, ApplicationC
 	public Chat getExistingChat(String name) {
 		return getDelegates().stream()
 				.map(c -> c.getExistingChat(name))
-				.filter(c -> c!=null)
+				.filter(Objects::nonNull)
 				.findFirst()
 				.orElse(null);
 	}
@@ -78,7 +79,7 @@ public class AllConversations implements Conversations<Chat, User>, ApplicationC
 				.flatMap(p -> p.getChatAdmins(r).stream())
 				.collect(Collectors.toList());
 	}
-	
+
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.ctx = applicationContext;
@@ -89,19 +90,19 @@ public class AllConversations implements Conversations<Chat, User>, ApplicationC
 	public User getUserById(String id) {
 		return getDelegates().stream()
 			.map(p -> p.getUserById(id))
-			.filter(u -> u != null)
+			.filter(Objects::nonNull)
 			.findFirst()
 			.orElse(null);
 	}
-	
+
 	@Override
 	public Chat getChatById(String id) {
 		return getDelegates().stream()
 			.map(p -> p.getChatById(id))
-			.filter(c -> c != null)
+			.filter(Objects::nonNull)
 			.findFirst()
 			.orElse(null);
 	}
-	
-	
+
+
 }

@@ -30,20 +30,20 @@ import com.microsoft.bot.schema.ConversationReference;
 import com.microsoft.bot.schema.ResourceResponse;
 
 /**
- * Teams doesn't seem to support lookup of the list of conversations a bot is 
+ * Teams doesn't seem to support lookup of the list of conversations a bot is
  * involved in, which makes it impossible to write getAllAddressables().
- * 
+ *
  * This is left as a problem for the subclass ;)
- * 
+ *
  * @author rob@kite9.com
  *
  */
 public abstract class AbstractTeamsConversations implements TeamsConversations {
-	
+
 	private MicrosoftAppCredentials mac;
 	private BotFrameworkAdapter bfa;
 	private ChannelAccount botAccount;
-	
+
 	public AbstractTeamsConversations(BotFrameworkAdapter bfa, MicrosoftAppCredentials mac, ChannelAccount botAccount) {
 		super();
 		this.mac = mac;
@@ -56,8 +56,8 @@ public abstract class AbstractTeamsConversations implements TeamsConversations {
 		ConnectorClient connectorClient = ctx.getTurnState().get(BotFrameworkAdapter.CONNECTOR_CLIENT_KEY);
 		return connectorClient.getConversations();
 	}
-	
-	
+
+
 	@Override
 	public boolean isSupported(Chat r) {
 		return r instanceof TeamsChat;
@@ -76,7 +76,7 @@ public abstract class AbstractTeamsConversations implements TeamsConversations {
 	@Override
 	public List<TeamsUser> getChatMembers(TeamsChat r) {
 		try {
-			return getConversations().getConversationMembers(r.getKey()).get().stream()
+			return getConversations().getConversationMembers(r.key()).get().stream()
 				.map(cm -> new TeamsUser(cm.getId(), cm.getName(), cm.getAadObjectId()))
 				.collect(Collectors.toList());
 		} catch (Exception e) {
@@ -87,7 +87,7 @@ public abstract class AbstractTeamsConversations implements TeamsConversations {
 	@Override
 	public List<TeamsUser> getChatAdmins(TeamsChat r) {
 		try {
-			return getConversations().getConversationMembers(r.getKey()).get().stream()
+			return getConversations().getConversationMembers(r.key()).get().stream()
 				.map(cm -> new TeamsUser(cm.getId(), cm.getName(), cm.getAadObjectId()))
 				.collect(Collectors.toList());
 		} catch (Exception e) {
@@ -120,7 +120,7 @@ public abstract class AbstractTeamsConversations implements TeamsConversations {
 		TurnContext tc = getWorkingTurnContext(null);
 		List<TeamsChannel> channels = getTeamsChannels(tc);
 		return channels.stream()
-			.filter(x -> x.getKey().equals(ca.getId()))
+			.filter(x -> x.key().equals(ca.getId()))
 			.findFirst()
 			.isPresent();
 	}
@@ -135,7 +135,7 @@ public abstract class AbstractTeamsConversations implements TeamsConversations {
 		try {
 			TurnContext tc = getWorkingTurnContext(null);
 			TeamsAddressable ta = getTeamsAddressable(tc.getActivity().getConversation());
-			return getUser(getConversations().getConversationMember(userId, ta.getKey()).get());
+			return getUser(getConversations().getConversationMember(userId, ta.key()).get());
 		} catch (Exception e) {
 			throw new TeamsException("Couldn't lookup user", e);
 		}
@@ -146,12 +146,12 @@ public abstract class AbstractTeamsConversations implements TeamsConversations {
 			ConversationParameters cp = new ConversationParameters();
 			cp.setIsGroup(false);
 			cp.setTenantId(mac.getChannelAuthTenant());
-			cp.setMembers(Collections.singletonList(new ChannelAccount(tu.getKey())));
-			
+			cp.setMembers(Collections.singletonList(new ChannelAccount(tu.key())));
+
 			return getConversations().createConversation(cp).get().getId();
 		} catch (Exception e) {
 			throw new TeamsException("Couldn't create one-to-one chat", e);
-		}		
+		}
 	}
 
 	@Override
@@ -163,12 +163,12 @@ public abstract class AbstractTeamsConversations implements TeamsConversations {
 			ca.setConversationType("personal");
 			return ca;
 		} else if (address instanceof TeamsChannel) {
-			ConversationAccount ca = new ConversationAccount(address.getKey());
+			ConversationAccount ca = new ConversationAccount(address.key());
 			ca.setTenantId(mac.getChannelAuthTenant());
 			ca.setConversationType("channel");
 			return ca;
 		} else if (address instanceof TeamsMultiwayChat) {
-			ConversationAccount ca = new ConversationAccount(address.getKey());
+			ConversationAccount ca = new ConversationAccount(address.key());
 			ca.setTenantId(mac.getChannelAuthTenant());
 			ca.setConversationType("groupChat");
 			return ca;
@@ -176,7 +176,7 @@ public abstract class AbstractTeamsConversations implements TeamsConversations {
 			return null;
 		}
 	}
-	
+
 	@Override
 	public TeamsAddressable getTeamsAddressable(ConversationAccount tcd) {
 		if ("groupChat".equals(tcd.getConversationType())) {
@@ -189,8 +189,8 @@ public abstract class AbstractTeamsConversations implements TeamsConversations {
 			return null;
 		}
 	}
-	
-	
+
+
 
 	private String createChatName(String d, ConversationAccount tcd) {
 		if (d!=null) {
@@ -199,16 +199,16 @@ public abstract class AbstractTeamsConversations implements TeamsConversations {
 			try {
 				// construct a name
 				List<ChannelAccount> participants = getConversations().getConversationMembers(tcd.getId()).get().stream().collect(Collectors.toList());
-				
+
 				String out = "Chat With "+participants.stream()
 						.limit(5)
-						.map(cm -> cm.getName())
+						.map(ChannelAccount::getName)
 						.collect(Collectors.joining(", "));
-				
+
 				if (participants.size() > 5) {
 					out = out + " ("+(participants.size()-5)+" more)";
 				}
-				
+
 				return out;
 			} catch (Exception e) {
 				return "Group Chat (Unknown Participants)";
@@ -219,24 +219,24 @@ public abstract class AbstractTeamsConversations implements TeamsConversations {
 	private TurnContext getWorkingTurnContext(TeamsAddressable ta) {
 		try {
 			TurnContext out = CurrentTurnContext.CURRENT_CONTEXT.get();
-			
+
 			if (out != null) {
 				return out;
 			}
-			
+
 			TurnContext[] holder = new TurnContext[1];
-			
+
 			bfa.continueConversation(mac.getAppId(), createConversationReference(ta), tc -> {
 				holder[0] = tc;
 				return CompletableFuture.completedFuture(null);
 			}).get();
-			
+
 			return holder[0];
 		} catch (Exception e) {
 			throw new TeamsException("Coulnd't create turn context", e);
 		}
 	}
-	
+
 
 	public CompletableFuture<ResourceResponse> handleActivity(Activity activity, TeamsAddressable to) {
 		TurnContext ctx = getWorkingTurnContext(to);
@@ -255,7 +255,7 @@ public abstract class AbstractTeamsConversations implements TeamsConversations {
 		cr.setServiceUrl("https://smba.trafficmanager.net/uk/");
 		cr.setLocale("en-GB");
 		if (address != null) {
-			cr.setUser(new ChannelAccount(address.getKey()));
+			cr.setUser(new ChannelAccount(address.key()));
 		}
 		cr.setChannelId("msteams");
 		return cr;
@@ -269,5 +269,5 @@ public abstract class AbstractTeamsConversations implements TeamsConversations {
 			return null;
 		}
 	}
-	
+
 }

@@ -31,19 +31,19 @@ import com.symphony.user.DisplayName;
 /**
  * Provides functionality for simple command messages.  i.e. those likely to have been typed in by users.
  * Will deliberately barf when it encounters tables, or lists, or something that is not just a list of words and hash/cash/mention tags on a line.
- * 
+ *
  * @author Rob Moffat
  *
  */
 public class MessageMLParser extends AbstractContentParser<String, EntityJson>{
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(PresentationMLHandler.class);
-		
+
 	static class TagFrame<X extends Tag> extends TextFrame<X> {
 
 		String id;
 		X contents;
-		
+
 		public TagFrame(String qName, X contents) {
 			super(qName);
 			this.contents = contents;
@@ -56,7 +56,7 @@ public class MessageMLParser extends AbstractContentParser<String, EntityJson>{
 			} else if ((contents instanceof SymphonyRoom sr) && (contents.getName() == null)) {
 				sr.getId().add(new RoomName(bufferWithoutPrefix()));
 			}
-			
+
 			return contents;
 		}
 
@@ -68,7 +68,7 @@ public class MessageMLParser extends AbstractContentParser<String, EntityJson>{
 				return out;
 			}
 		}
-		
+
 		@Override
 		public boolean isEnding(String qName) {
 			return true;
@@ -83,23 +83,23 @@ public class MessageMLParser extends AbstractContentParser<String, EntityJson>{
 		public boolean hasContent() {
 			return true;
 		}
-		
-		
+
+
 	}
-	
+
 	public Message apply(String source) {
 		return apply(source, new EntityJson());
 	}
 
 	public Message apply(String message, EntityJson jsonObjects) {
 		message = (!message.contains("<messageML>")) ? "<messageML>" + message + "</messageML>" : message;
-		
+
 
 		Content [] out = { null };
-		
+
 		try {
 			SAXParserFactory factory = SAXParserFactory.newInstance();
-			factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);          
+			factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
 			SAXParser saxParser = factory.newSAXParser();
 			saxParser.parse(new InputSource(new StringReader(message)), new DefaultHandler2() {
 
@@ -108,7 +108,7 @@ public class MessageMLParser extends AbstractContentParser<String, EntityJson>{
 				@Override
 				public void startElement(String uri, String localName, String qName, Attributes attributes)
 						throws SAXException {
-					
+
 					if (top instanceof CodeBlockFrame) {
 						push(new IgnoredFrame(qName));
 					} else if (isStartCodeBlock(qName, attributes)) {
@@ -117,15 +117,15 @@ public class MessageMLParser extends AbstractContentParser<String, EntityJson>{
 						String dataEntityId = attributes.getValue("data-entity-id");
 						Object o = jsonObjects.get(dataEntityId);
 						if (o instanceof SymphonyUser user) {
-							push(new TagFrame<SymphonyUser>(qName, user));
+							push(new TagFrame<>(qName, user));
 						} else if (o instanceof HashTag tag) {
-							push(new TagFrame<HashTag>(qName, tag));
+							push(new TagFrame<>(qName, tag));
 						} else if (o instanceof CashTag tag) {
-							push(new TagFrame<CashTag>(qName, tag));
+							push(new TagFrame<>(qName, tag));
 						} else if (o instanceof Taxonomy taxonomy
 								&& !taxonomy.getId().isEmpty()
-								&& ((Taxonomy) o).getId().getFirst() instanceof HashTag) {
-							push(new TagFrame<HashTag>(qName, (HashTag) taxonomy.getId().getFirst()));
+								&& taxonomy.getId().getFirst() instanceof HashTag) {
+							push(new TagFrame<>(qName, (HashTag) taxonomy.getId().getFirst()));
 						} else {
 							throw new UnsupportedOperationException();
 						}
@@ -159,7 +159,7 @@ public class MessageMLParser extends AbstractContentParser<String, EntityJson>{
 				private boolean isStartRow(String qName, Attributes attributes) {
 					return "tr".equals(qName);
 				}
-				
+
 				private boolean isStartCodeBlock(String qName, Attributes attributes) {
 					return "pre".equals(qName) || "code".equals(qName);
 				}
@@ -172,7 +172,7 @@ public class MessageMLParser extends AbstractContentParser<String, EntityJson>{
 
 				@Override
 				public void startEntity(String name) throws SAXException {
-					// do nothing 
+					// do nothing
 				}
 
 				@Override
@@ -187,11 +187,11 @@ public class MessageMLParser extends AbstractContentParser<String, EntityJson>{
 				private boolean isStartTag(String qName, Attributes attributes) {
 					return "span".equals(qName) && (attributes.getValue("class") != null) && (attributes.getValue("class").contains("entity"));
 				}
-				
+
 				private boolean isStartParaListItemOrCell(String qName, Attributes attributes) {
 					return "p".equals(qName) || "td".equals(qName) || "li".equals(qName) || "th".equals(qName);
 				}
-				
+
 				@Override
 				public void endElement(String uri, String localName, String qName) throws SAXException {
 					if (top.isEnding(qName)) {
@@ -232,14 +232,14 @@ public class MessageMLParser extends AbstractContentParser<String, EntityJson>{
 				public void fatalError(SAXParseException e) throws SAXException {
 					LOG.error("SAX fatal error: ", e);
 				}
-				
+
 			});
-		
+
 		} catch (Exception e) {
 			throw new SymphonyException("Couldn't parse message: "+message, e);
 		}
 
-		
+
 		return (Message) out[0];
 	}
 

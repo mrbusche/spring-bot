@@ -19,14 +19,14 @@ public class Article {
 	private HashTag articleHashTag;
 	private String feedName;
 	private String pubDate;
-	
+
 	public Article(String title, String author, String feedName, String uri, FeedList fl, HashTag feedHashTag, HashTag articleHashTag) {
 		super();
 		this.title = title;
 		this.feedName = feedName;
 		this.author = author;
 		this.uri = uri;
-		this.feedUrls = fl.feeds.stream().map(f -> f.getUrl()).collect(Collectors.toList());
+		this.feedUrls = fl.feeds.stream().map(Feed::getUrl).collect(Collectors.toList());
 		this.feedHashTag = feedHashTag;
 		this.articleHashTag = articleHashTag;
 	}
@@ -34,7 +34,7 @@ public class Article {
 	public Article() {
 		super();
 	}
-	
+
 	public String getTitle() {
 		return title;
 	}
@@ -50,7 +50,7 @@ public class Article {
 	public void setAuthor(String author) {
 		this.author = author;
 	}
-	
+
 	public String getUri() {
 		return uri;
 	}
@@ -82,7 +82,7 @@ public class Article {
 	public void setFeedName(String feedName) {
 		this.feedName = feedName;
 	}
-	
+
 	public HashTag getArticleHashTag() {
 		return articleHashTag;
 	}

@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.finos.springbot.teams.content.TeamsAddressable;
-import org.finos.springbot.teams.messages.MessageActivityHandler;
 import org.finos.springbot.teams.state.TeamsStateStorage;
 import org.finos.springbot.teams.state.TeamsStateStorage.Filter;
 import org.finos.springbot.workflow.content.Addressable;
@@ -19,101 +18,90 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This uses Azure's blob storage to store the data-history of chats with the bot. 
- * 
- * @author rob@kite9.com
+ * This uses Azure's blob storage to store the data-history of chats with the bot.
  *
+ * @author rob@kite9.com
  */
-public class StateStorageBasedTeamsHistory implements TeamsHistory {
-	
-	private static final Logger LOG = LoggerFactory.getLogger(StateStorageBasedTeamsHistory.class);
-	
-	public final TeamsStateStorage tss;
+public record StateStorageBasedTeamsHistory(TeamsStateStorage tss) implements TeamsHistory {
 
-	public StateStorageBasedTeamsHistory(TeamsStateStorage tss) {
-		this.tss = tss;
-	}
+    private static final Logger LOG = LoggerFactory.getLogger(StateStorageBasedTeamsHistory.class);
 
-	@Override
-	public boolean isSupported(Addressable a) {
-		return a instanceof TeamsAddressable;
-	}
-	
-	@Override
- 	public <X> Optional<X> getLastFromHistory(Class<X> type, TeamsAddressable address) {
-		List<Filter> tags = new ArrayList<>();
-		tags.add(new Filter(TagSupport.formatTag(type)));
-		tags.add(new Filter(ADDRESSABLE_KEY,address.getKey(), "="));
-		return findObjectFromItem(type, tss.retrieve(tags, true), true);
+    @Override
+    public boolean isSupported(Addressable a) {
+        return a instanceof TeamsAddressable;
+    }
 
-	}
+    @Override
+    public <X> Optional<X> getLastFromHistory(Class<X> type, TeamsAddressable address) {
+        List<Filter> tags = new ArrayList<>();
+        tags.add(new Filter(TagSupport.formatTag(type)));
+        tags.add(new Filter(ADDRESSABLE_KEY, address.key(), "="));
+        return findObjectFromItem(type, tss.retrieve(tags, true), true);
 
-	public <X> Optional<X> getLastFromHistory(Class<X> type, String expectedTag, TeamsAddressable address) {
-		List<Filter> tags = new ArrayList<>();
-		tags.add(new Filter(expectedTag));
-		tags.add(new Filter(ADDRESSABLE_KEY,address.getKey(), "="));
-		return findObjectFromItem(type, tss.retrieve(tags, true), true);
-	}
+    }
 
-	@SuppressWarnings("unchecked")
-	public static <X> Optional<X> findObjectFromItem(Class<X> type, Iterable<Map<String, Object>> data, boolean firstOnly) {
-		Iterator<Map<String, Object>> it = data.iterator();
-		while (it.hasNext()) {
-			Map<String, Object> map = it.next();
-			for (Object val : map.values()) {
-				if (type.isAssignableFrom(val.getClass())) {
-					return Optional.of((X) val);
-				}
-			}
-			
-			if (firstOnly) {
-				LOG.error("Should have found object of type "+type+" inside "+map);
-				return Optional.empty();
-			}
+    public <X> Optional<X> getLastFromHistory(Class<X> type, String expectedTag, TeamsAddressable address) {
+        List<Filter> tags = new ArrayList<>();
+        tags.add(new Filter(expectedTag));
+        tags.add(new Filter(ADDRESSABLE_KEY, address.key(), "="));
+        return findObjectFromItem(type, tss.retrieve(tags, true), true);
+    }
 
-		}
-		
-		return Optional.empty();
-	}
-	
-	@SuppressWarnings("unchecked")
-	public static <X> List<X> findObjectsFromItems(Class<X> type, Iterable<Map<String, Object>> data) {
-		Iterator<Map<String, Object>> it = data.iterator();
-		List<X> out = new ArrayList<X>();
-		while (it.hasNext()) {
-			Map<String, Object> map = it.next();
-			for (Object val : map.values()) {
-				if (type.isAssignableFrom(val.getClass())) {
-					out.add((X) val);
-				}
-			}
-		}
-		
-		return out;
-	}
+    @SuppressWarnings("unchecked")
+    public static <X> Optional<X> findObjectFromItem(Class<X> type, Iterable<Map<String, Object>> data, boolean firstOnly) {
+        for (Map<String, Object> map : data) {
+            for (Object val : map.values()) {
+                if (type.isAssignableFrom(val.getClass())) {
+                    return Optional.of((X) val);
+                }
+            }
 
-	protected <X> List<X> getList(Class<X> type, String expectedTag, String directory, Instant sinceTimestamp) {
-		List<Filter> tags = new ArrayList<>();
-		tags.add(new Filter(expectedTag));
-		tags.add(new Filter(ADDRESSABLE_KEY, directory, "="));
-		if (sinceTimestamp != null) {
-			tags.add(new Filter(TIMESTAMP_KEY, ""+sinceTimestamp.toEpochMilli() , ">="));
-		}
-		return findObjectsFromItems(type, tss.retrieve(tags, false));
-	}
+            if (firstOnly) {
+                LOG.error("Should have found object of type " + type + " inside " + map);
+                return Optional.empty();
+            }
 
-	@Override
-	public <X> List<X> getFromHistory(Class<X> type, TeamsAddressable address, Instant since) {
-		return getList(type, TagSupport.formatTag(type), address.getKey(), since);
-	}
+        }
+
+        return Optional.empty();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <X> List<X> findObjectsFromItems(Class<X> type, Iterable<Map<String, Object>> data) {
+        Iterator<Map<String, Object>> it = data.iterator();
+        List<X> out = new ArrayList<>();
+        while (it.hasNext()) {
+            Map<String, Object> map = it.next();
+            for (Object val : map.values()) {
+                if (type.isAssignableFrom(val.getClass())) {
+                    out.add((X) val);
+                }
+            }
+        }
+
+        return out;
+    }
+
+    protected <X> List<X> getList(Class<X> type, String expectedTag, String directory, Instant sinceTimestamp) {
+        List<Filter> tags = new ArrayList<>();
+        tags.add(new Filter(expectedTag));
+        tags.add(new Filter(ADDRESSABLE_KEY, directory, "="));
+        if (sinceTimestamp != null) {
+            tags.add(new Filter(TIMESTAMP_KEY, "" + sinceTimestamp.toEpochMilli(), ">="));
+        }
+        return findObjectsFromItems(type, tss.retrieve(tags, false));
+    }
+
+    @Override
+    public <X> List<X> getFromHistory(Class<X> type, TeamsAddressable address, Instant since) {
+        return getList(type, TagSupport.formatTag(type), address.key(), since);
+    }
 
 
-	@Override
-	public <X> List<X> getFromHistory(Class<X> type, String t, TeamsAddressable address, Instant since) {
-		return getList(type, t, address.getKey(), since);
-	}
+    @Override
+    public <X> List<X> getFromHistory(Class<X> type, String t, TeamsAddressable address, Instant since) {
+        return getList(type, t, address.key(), since);
+    }
 
-	
-	
 
 }

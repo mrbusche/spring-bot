@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Sets up a generic approach to parsing some kind of markup (messageML/HTML)
  * into the Content object structure.
- * 
+ *
  * @author rob@kite9.com
  *
  */
@@ -222,7 +222,7 @@ public abstract class AbstractContentParser<T, U> implements BiFunction<T, U, Co
 		}
 
 		protected void consumeBuffer() {
-			Arrays.stream(buf.toString().split("\\s+")).filter(s -> s.length() > 0).map(s -> Word.of(s))
+			Arrays.stream(buf.toString().split("\\s+")).filter(s -> s.length() > 0).map(Word::of)
 					.forEach(w -> stuffSoFar.add(w));
 
 			buf.setLength(0);

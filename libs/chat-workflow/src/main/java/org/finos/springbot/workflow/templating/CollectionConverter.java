@@ -6,11 +6,11 @@ import java.lang.reflect.Type;
 import java.util.Collection;
 
 public class CollectionConverter<X> extends AbstractComplexTypeConverter<X> {
-	
+
 	public CollectionConverter(Rendering<X> r) {
 		super(LOW_PRIORITY, r);
 	}
-		
+
 	@Override
 	public boolean canConvert(Field ctx, Type t) {
 		if (t instanceof ParameterizedType type) {
@@ -35,10 +35,10 @@ public class CollectionConverter<X> extends AbstractComplexTypeConverter<X> {
 			return r.textField(variable, false);
 		}
 	}
-	
-	
+
+
 	protected WithField<X> collectionValues() {
-        return new WithField<X>() {
+        return new WithField<>() {
 
             @Override
             public boolean expand() {
@@ -47,13 +47,13 @@ public class CollectionConverter<X> extends AbstractComplexTypeConverter<X> {
 
             @Override
             public X apply(Field f, boolean editMode, Variable variable, WithType<X> contentHandler) {
-            	Type t = f.getGenericType();
-            	X out = contentHandler.apply(null, contentHandler, t, editMode, variable, null);
-            	return out;
+                Type t = f.getGenericType();
+                X out = contentHandler.apply(null, contentHandler, t, editMode, variable, null);
+                return out;
             }
         };
 
     }
-	
-	
+
+
 }

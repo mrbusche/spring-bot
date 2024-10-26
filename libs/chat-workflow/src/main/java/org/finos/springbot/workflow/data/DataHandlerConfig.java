@@ -1,6 +1,7 @@
 package org.finos.springbot.workflow.data;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -33,16 +34,16 @@ public class DataHandlerConfig {
 
 	@Autowired
 	ApplicationContext ac;
-	
+
 	protected List<VersionSpace> scanForWorkClasses() {
 		return scanForWorkClasses(ac);
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean
 	public EntityJsonConverter entityJsonConverter() {
 		List<VersionSpace> workAnnotatedversionSpaces = scanForWorkClasses();
-		
+
 		ObjectMapper om = new ObjectMapper();
 		TypeFactory tf = TypeFactory.defaultInstance()
                 .withClassLoader(ac.getClassLoader());
@@ -51,24 +52,24 @@ public class DataHandlerConfig {
 		om.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS);
 		om.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		om.registerModule(new JavaTimeModule());
-				
+
 		return new EntityJsonConverter(om, workAnnotatedversionSpaces);
 	}
-	
-	
+
+
 	public static List<VersionSpace> scanForWorkClasses(ApplicationContext ac) {
 		ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(false);
 		scanner.addIncludeFilter(new AnnotationTypeFilter(Work.class));
 		Set<BeanDefinition> toAdd = scanner.findCandidateComponents(getPackageName(ChatWorkflowConfig.class));
-		
+
 		for (String ent : ac.getBeanNamesForAnnotation(SpringBootApplication.class)) {
 			String packageName = getPackageName(ac.getBean(ent).getClass());
 			Set<BeanDefinition> user = scanner.findCandidateComponents(packageName);
 			toAdd.addAll(user);
 		}
-		
+
 		List<VersionSpace> versionSpaces = toAdd.stream()
-			.map(bd -> bd.getBeanClassName()) 
+			.map(BeanDefinition::getBeanClassName)
 			.map(s -> {
 				try {
 					// nosemgrep
@@ -78,7 +79,7 @@ public class DataHandlerConfig {
 					return null;
 				}
 			})
-			.filter(x -> x != null) 
+			.filter(Objects::nonNull)
 			.flatMap(c -> {
 				Work w = c.getAnnotation(Work.class);
 				String jsonTypeName[] = w.jsonTypeName();

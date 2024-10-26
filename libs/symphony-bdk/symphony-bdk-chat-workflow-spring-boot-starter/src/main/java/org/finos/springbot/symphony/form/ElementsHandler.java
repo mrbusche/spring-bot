@@ -25,21 +25,21 @@ import com.symphony.bdk.spring.events.RealTimeEvent;
 
 /**
  * Takes an elements event and turns it into a workflow request.
- * 
+ *
  * @author Rob Moffat
  *
  */
 public class ElementsHandler {
 
 	private static final Logger LOG = LoggerFactory.getLogger(ElementsHandler.class);
-	
+
 	MessageService messagesApi;
 	EntityJsonConverter jsonConverter;
 	FormConverter formConverter;
 	List<ActionConsumer> elementsConsumers;
 	SymphonyConversations ruBuilder;
 	FormValidationProcessor validationProcessor;
-	
+
 	public ElementsHandler(MessageService messagesApi, EntityJsonConverter jsonConverter,
 			FormConverter formConverter, List<ActionConsumer> elementsConsumers, SymphonyConversations ruBuilder, FormValidationProcessor fvp) {
 		this.messagesApi = messagesApi;
@@ -58,28 +58,26 @@ public class ElementsHandler {
 			Map<String, Object> formValues = (Map<String, Object>) action.getFormValues();
 			String verb = (String) formValues.get("action");
 			String formId = action.getFormId();
-			
+
 			Object currentForm;
 			if (hasFormData(formValues)) {
 				currentForm = formConverter.convert(formValues, formId);
 			} else {
 				currentForm = null;
 			}
-			
+
 			EntityJson data = retrieveData(action.getFormMessageId());
 			Addressable rr = null;
 			if(action.getStream().getStreamType().equals(StreamType.TypeEnum.ROOM.name())) {
 				rr = ruBuilder.loadRoomById(action.getStream().getStreamId());
 			}
 			User u = ruBuilder.loadUserById(event.getInitiator().getUser().getUserId());
-			
+
 			// if we're not in a room, address the user directly.
 			Addressable from = rr == null ? u : rr;
-			
-			FormAction ea = validationProcessor.validationCheck(verb, rr, currentForm, () -> {
-				return new FormAction(from, u, currentForm, verb, data);
-			});
-			
+
+			FormAction ea = validationProcessor.validationCheck(verb, rr, currentForm, () -> new FormAction(from, u, currentForm, verb, data));
+
 			if (ea != null) {
 				try {
 					Action.CURRENT_ACTION.set(ea);
@@ -92,7 +90,7 @@ public class ElementsHandler {
 					}
 				} finally {
 					Action.CURRENT_ACTION.set(Action.NULL_ACTION);
-				}	
+				}
 			};
 		} catch (Exception e) {
 			LOG.error("Couldn't handle event "+event, e);
@@ -106,7 +104,7 @@ public class ElementsHandler {
 	private boolean hasFormData(Map<String, Object> formValues) {
 		return formValues.size() > 1;
 	}
-	
+
 	private EntityJson retrieveData(String formMessageId) {
 		if (formMessageId != null) {
 			V4Message originatingMessage = messagesApi.getMessage(formMessageId.replace("/", "_").replace("+", "-").replace("=", ""));

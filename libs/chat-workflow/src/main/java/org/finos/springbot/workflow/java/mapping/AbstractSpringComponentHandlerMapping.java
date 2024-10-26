@@ -27,19 +27,19 @@ import org.springframework.util.ClassUtils;
 public abstract class AbstractSpringComponentHandlerMapping<T> extends ApplicationObjectSupport implements ChatHandlerMapping<T>, InitializingBean {
 
 	private boolean detectHandlerMethodsInAncestorContexts = false;
-	
+
 	protected MappingRegistry mappingRegistry = new MappingRegistry();
 	protected AllConversations conversations;
-	
+
 	public AbstractSpringComponentHandlerMapping(AllConversations conversations) {
 		super();
 		this.conversations = conversations;
 	}
 
 	/**
-	 * 
+	 *
 	 * Detects handler methods at initialization.
-	 * 
+	 *
 	 * @see #initHandlerMethods
 	 */
 	@Override
@@ -49,7 +49,7 @@ public abstract class AbstractSpringComponentHandlerMapping<T> extends Applicati
 
 	/**
 	 * Scan beans in the ApplicationContext, detect and register handler methods.
-	 * 
+	 *
 	 * @see #getCandidateBeanNames()
 	 * @see #processCandidateBean
 	 * @see #handlerMethodsInitialized
@@ -61,7 +61,7 @@ public abstract class AbstractSpringComponentHandlerMapping<T> extends Applicati
 		}
 		handlerMethodsInitialized(getHandlerMethods());
 	}
-	
+
 	/**
 	 * Invoked after all handler methods have been detected.
 	 * @param handlerMethods a read-only map with handler methods and mappings.
@@ -73,7 +73,7 @@ public abstract class AbstractSpringComponentHandlerMapping<T> extends Applicati
 			logger.debug(total + " mappings in " + this.getClass().getCanonicalName());
 		}
 	}
-	
+
 	/**
 	 * Determine the names of candidate beans in the application context.
 	 * @since 5.1
@@ -85,7 +85,7 @@ public abstract class AbstractSpringComponentHandlerMapping<T> extends Applicati
 				BeanFactoryUtils.beanNamesForTypeIncludingAncestors(obtainApplicationContext(), Object.class) :
 				obtainApplicationContext().getBeanNamesForType(Object.class));
 	}
-	
+
 	/**
 	 * Determine the type of the specified candidate bean and call
 	 * {@link #detectHandlerMethods} if identified as a handler type.
@@ -110,11 +110,11 @@ public abstract class AbstractSpringComponentHandlerMapping<T> extends Applicati
 			}
 		}
 		if (bean != null) {
-			
+
 			detectHandlerMethods(bean);
 		}
 	}
-	
+
 	/**
 	 * Return a (read-only) map with all mappings and HandlerMethod's.
 	 */
@@ -154,7 +154,7 @@ public abstract class AbstractSpringComponentHandlerMapping<T> extends Applicati
 			if (logger.isTraceEnabled()) {
 				logger.trace(formatMappings(userType, methods));
 			}
-			
+
 			methods.forEach((method, mapping) -> {
 				Method invocableMethod = AopUtils.selectInvocableMethod(method, userType);
 				registerHandlerMethod(handler, invocableMethod, mapping);
@@ -166,11 +166,11 @@ public abstract class AbstractSpringComponentHandlerMapping<T> extends Applicati
 		this.mappingRegistry.register(mapping, handler, method);
 	}
 
-	
-	
+
+
 	@Nullable
 	protected abstract T getMappingForMethod(Method method, Class<?> handlerType);
-	
+
 	private String formatMappings(Class<?> userType, Map<Method, T> methods) {
 		String formattedType = Arrays.stream(ClassUtils.getPackageName(userType).split("\\."))
 				.map(p -> p.substring(0, 1))
@@ -185,8 +185,8 @@ public abstract class AbstractSpringComponentHandlerMapping<T> extends Applicati
 				})
 				.collect(Collectors.joining("\n\t", "\n\t" + formattedType + ":" + "\n\t", ""));
 	}
-	
-	
+
+
 	/**
 	 * A registry that maintains all mappings to handler methods, exposing methods
 	 * to perform lookups and providing concurrent access.
@@ -226,18 +226,18 @@ public abstract class AbstractSpringComponentHandlerMapping<T> extends Applicati
 			try {
 				ChatHandlerMethod handlerMethod = createHandlerMethod(handler, method);
 				validateMethodMapping(handlerMethod, mapping);
-				
+
 				this.registry.put(mapping, createMappingRegistration(mapping, handlerMethod));
 			}
 			finally {
 				this.readWriteLock.writeLock().unlock();
 			}
 		}
-		
+
 		protected ChatHandlerMethod createHandlerMethod(Object handler, Method method) {
 			return new ChatHandlerMethod(handler, method);
 		}
-		
+
 
 		private void validateMethodMapping(ChatHandlerMethod handlerMethod, T mapping) {
 			ChatMapping<T> registration = this.registry.get(mapping);
@@ -251,14 +251,14 @@ public abstract class AbstractSpringComponentHandlerMapping<T> extends Applicati
 			}
 		}
 	}
-	
+
 	protected boolean roomMatched(String[] rooms, Chat addressable) {
 		for (String r : rooms) {
-			if (addressable.getName().equals(r)) {
+			if (addressable.name().equals(r)) {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -268,7 +268,7 @@ public abstract class AbstractSpringComponentHandlerMapping<T> extends Applicati
 		private final T mapping;
 
 		private final ChatHandlerMethod handlerMethod;
-		
+
 		private final String name;
 
 		public MappingRegistration(
@@ -295,12 +295,12 @@ public abstract class AbstractSpringComponentHandlerMapping<T> extends Applicati
 		public String getUniqueName() {
 			return name;
 		}
-		
+
 	}
 
 	protected abstract MappingRegistration<T> createMappingRegistration(T mapping, ChatHandlerMethod handlerMethod);
 
-	
+
 
 	protected boolean canBePerformed(Addressable a, User u, String[] excludeRooms, String[] includeRooms, boolean isAdmin) {
 		if ((a instanceof Chat chat) && (excludeRooms.length > 0)) {
@@ -313,7 +313,7 @@ public abstract class AbstractSpringComponentHandlerMapping<T> extends Applicati
 			if (a instanceof Chat chat) {
 				if (!roomMatched(includeRooms, chat)) {
 					return false;
-				} 
+				}
 			} else {
 				return false;
 			}
@@ -327,5 +327,5 @@ public abstract class AbstractSpringComponentHandlerMapping<T> extends Applicati
 		}
 	}
 
-	
+
 }

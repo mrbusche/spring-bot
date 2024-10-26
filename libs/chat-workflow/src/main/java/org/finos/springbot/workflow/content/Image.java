@@ -9,50 +9,28 @@ public interface Image extends Content {
 		return "";
 	}
 
-	public String getUrl();
-	
-	public String getAlt();
-	
-	public static class ImageImpl implements Image {
-		
-		private final String url, alt;
+	public String url();
 
-		public ImageImpl(String url, String alt) {
-			super();
-			this.url = url;
-			this.alt = alt;
-		}
-		
-		@Override
-		public String getUrl() {
-			return url;
-		}
+	public String alt();
+
+	public record ImageImpl(String url, String alt) implements Image {
+
 
 		@Override
-		public String getAlt() {
-			return alt;
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(alt, url);
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
-				return true;
-			} else if (obj instanceof Image other) {
-				return Objects.equals(alt, other.getAlt()) && Objects.equals(url, other.getUrl());
-			} else {
-				return false;
+			public boolean equals(Object obj) {
+				if (this == obj) {
+					return true;
+				} else if (obj instanceof Image other) {
+					return Objects.equals(alt, other.alt()) && Objects.equals(url, other.url());
+				} else {
+					return false;
+				}
 			}
-		}
-		
+
 	}
-	
+
 	public static Image of(String url, String alt) {
 		return new ImageImpl(url, alt);
 	}
-	
+
 }

@@ -8,15 +8,15 @@ import org.finos.springbot.workflow.annotations.Work;
 
 @Work
 @Template(
-		edit = "feedlist-edit", 
+		edit = "feedlist-edit",
 		view = "feedlist-view")
 public class FeedList {
-	
-	List<Feed> feeds = new ArrayList<Feed>();
+
+	List<Feed> feeds = new ArrayList<>();
 	boolean paused = false;
 	boolean adminOnly = false;
 	Integer updateIntervalMinutes = 60;
-	List<Filter> filters = new ArrayList<Filter>();
+	List<Filter> filters = new ArrayList<>();
 
 	public List<Filter> getFilters() {
 		return filters;
@@ -42,9 +42,9 @@ public class FeedList {
 		this.feeds = feeds;
 	}
 
-	
-	
-	
+
+
+
 	public boolean isAdminOnly() {
 		return adminOnly;
 	}

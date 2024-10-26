@@ -30,29 +30,29 @@ import com.rometools.rome.feed.synd.SyndEntry;
 
 @Component
 public class TimedAlerter {
-	
+
 	public static final long _5_MINUTES = 5 * 60 * 1000;
-	
+
 	public static Logger LOG =  LoggerFactory.getLogger(TimedAlerter.class);
-		
+
 	@Autowired
 	ResponseHandlers responseHandler;
-	
+
 	@Autowired
 	AllConversations r;
-	
+
 	@Autowired
 	AllHistory h;
-	
+
 	@Autowired
 	FeedLoader loader;
-	
+
 	@Autowired
 	FeedListCache flc;
-	
+
 	@Autowired
 	ArticleSender sender;
-	
+
 	/**
 	 * This is to ensure the feed list cache is up-to-date with symphony
 	 * @return
@@ -60,14 +60,14 @@ public class TimedAlerter {
 	@Scheduled(initialDelay = 10000, fixedRate = _5_MINUTES)
 	public void warmFeedListCache() {
 		onAllStreams(a -> {
-			Optional<FeedList> fl = h.getLastFromHistory(FeedList.class, a); 
+			Optional<FeedList> fl = h.getLastFromHistory(FeedList.class, a);
 			if (fl.isPresent()) {
 				flc.writeFeedList(a, fl.get());
-			}		
+			}
 			return 0;
 		});
 	}
-	
+
 	/**
 	 * Every minute, we look to see if any feedlists need refreshing..
 	 * @return
@@ -98,17 +98,17 @@ public class TimedAlerter {
 //		} else {
 //			LOG.info("Not leader, sleeping");
 //		}
-		
+
 		return count[0];
 	}
-	
+
 	@Scheduled(cron = "0 0 0 4 * *")
 	public void firstOfTheMonth() {
-		onAllStreams(s -> pauseRunningStreams(s));
+		onAllStreams(this::pauseRunningStreams);
 	}
 
 	private int pauseRunningStreams(Addressable a) {
-		Optional<FeedList> fl = h.getLastFromHistory(FeedList.class, a); 
+		Optional<FeedList> fl = h.getLastFromHistory(FeedList.class, a);
 		if ((fl.isPresent()) && (!fl.get().isPaused())) {
 			FeedList active = fl.get();
 			active.setPaused(true);
@@ -116,7 +116,7 @@ public class TimedAlerter {
 			flc.writeFeedList(a, active);
 			return 1;
 		}
-		
+
 		return 0;
 	}
 
@@ -131,7 +131,7 @@ public class TimedAlerter {
 				responseHandler.accept(new ErrorResponse(a, e));
 			}
 		}
-		
+
 		return count;
 	}
 
@@ -145,20 +145,20 @@ public class TimedAlerter {
 					Article article = new Article(e.getTitle(), e.getAuthor(), f.getName(), e.getLink(), fl, fht, aht);
 					count += sender.post(a, article);
 				}
-			}			
+			}
 		} catch (Exception e) {
 			LOG.error("Coulnd't process feed" + f.getName(), e);
 		}
 		return count;
 	}
-	
+
 	private boolean passesFilter(SyndEntry e, FeedList fl) {
 		for (Filter f : fl.getFilters()) {
 			if (!f.test(e.getTitle())) {
 				return false;
 			}
 		}
-		
+
 		return true;
 	}
 
@@ -174,7 +174,7 @@ public class TimedAlerter {
 		String simplified = f.getName().replaceAll("[^\\w]","");
 		return new HashTag(simplified);
 	}
-	
 
-	
+
+
 }

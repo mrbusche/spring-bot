@@ -25,15 +25,15 @@ import com.microsoft.bot.connector.authentication.MicrosoftAppCredentials;
 import com.microsoft.bot.schema.ChannelAccount;
 
 public class StateStorageBasedTeamsConversations extends AbstractTeamsConversations {
-	
+
 	public static final String ADDRESSABLE_INFO = "addressable-info";
 	public static final String ADDRESSABLE_TYPE = "addressable-type";
 	public static final String CHAT = "chat";
 	public static final String USER = "user";
-	
-	
+
+
 	protected final TeamsStateStorage tss;
-	
+
 	public StateStorageBasedTeamsConversations(BotFrameworkAdapter bfa, MicrosoftAppCredentials mac,
 			ChannelAccount botAccount, TeamsStateStorage tss) {
 		super(bfa, mac, botAccount);
@@ -61,12 +61,12 @@ public class StateStorageBasedTeamsConversations extends AbstractTeamsConversati
 	@Override
 	public TeamsChat getExistingChat(String name) {
 		return getAllChats().stream()
-			.filter(tc -> name.equals(tc.getName()))
+			.filter(tc -> name.equals(tc.name()))
 			.findFirst()
 			.orElse(null);
 	}
-	
-	
+
+
 
 	@Override
 	public TeamsChat getChatById(String id) {
@@ -87,15 +87,15 @@ public class StateStorageBasedTeamsConversations extends AbstractTeamsConversati
 
 	@Override
 	protected void ensureRoomRecorded(TeamsAddressable to) {
-		String file = to.getKey()+"/addressable";
-		
+		String file = to.key()+"/addressable";
+
 		Optional<Map<String, Object>> data = tss.retrieve(file);
-		
+
 		if (data.isEmpty()) {
 			Map<String, String> tags = new HashMap<>();
 			tags.put(ADDRESSABLE_INFO, TeamsStateStorage.PRESENT);
 			tags.put(ADDRESSABLE_TYPE, to instanceof Chat ? CHAT : USER);
-			tags.put(ADDRESSABLE_KEY, to.getKey());
+			tags.put(ADDRESSABLE_KEY, to.key());
 			EntityJson ej = new EntityJson();
 			ej.put(ADDRESSABLE_INFO, to);
 			tss.store(file, tags, ej);

@@ -12,15 +12,15 @@ import org.finos.springbot.workflow.response.WorkResponse;
 /**
  * When returning a {@link WorkResponse} to the user, this adds a list of chats that the
  * bot is a member of to the response data, for use in drop-downs.
- * 
+ *
  * @author rob@kite9.com
  *
  */
 public class ChatListResponseHandler implements ResponseHandler<Void> {
-	
+
 	AllConversations conversations;
-	
-	
+
+
 	public ChatListResponseHandler(AllConversations conversations) {
 		super();
 		this.conversations = conversations;
@@ -30,17 +30,17 @@ public class ChatListResponseHandler implements ResponseHandler<Void> {
 	public Void apply(Response t) {
 		if (t instanceof WorkResponse wr) {
 			Class<?> c = wr.getFormClass();
-			
+
 			RequiresChatList rcl = c.getAnnotation(RequiresChatList.class);
-				
+
 			if (rcl != null) {
 				wr.getData().put(rcl.key(), new DropdownList(
 					conversations.getAllChats().stream()
-						.map(cc -> new Item(cc.getKey(), cc.getName()))
+						.map(cc -> new Item(cc.key(), cc.name()))
 						.collect(Collectors.toList())));
 			}
 		}
-		
+
 		return null;
 	}
 

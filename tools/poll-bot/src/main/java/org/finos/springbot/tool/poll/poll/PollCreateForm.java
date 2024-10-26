@@ -16,17 +16,13 @@ public class PollCreateForm {
 
 	enum TimeUnit {
 		MINUTES, HOURS, DAYS;
-		
+
 		public ChronoUnit getChronoUnit() {
-			switch (this) {
-			case MINUTES:
-				return ChronoUnit.MINUTES;
-			case HOURS:
-				return ChronoUnit.HOURS;
-			case DAYS:
-			default:
-				return ChronoUnit.DAYS;
-			}
+            return switch (this) {
+                case MINUTES -> ChronoUnit.MINUTES;
+                case HOURS -> ChronoUnit.HOURS;
+                default -> ChronoUnit.DAYS;
+            };
 		}
 
 		public String toString() {
@@ -47,7 +43,7 @@ public class PollCreateForm {
 	@Max(60)
 	private Integer time = 15;
 	private TimeUnit timeUnit = TimeUnit.MINUTES;
-	
+
 	private boolean endAutomatically = true;
 
 	public String getQuestion() {

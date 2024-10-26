@@ -24,13 +24,13 @@ import org.springframework.util.StringUtils;
 /**
  * When returning a {@link WorkResponse} to the user, this gathers up the buttons that are available
  * on the form, as defined by the {@link ChatHandlerMapping}s.
- * 
+ *
  * @author rob@kite9.com
  *
  */
 public class ButtonsResponseHandler implements ResponseHandler<Void>, ApplicationContextAware {
-	
-	
+
+
 	private List<ChatHandlerMapping<ChatButton>> exposedHandlerMappings;
 	private ApplicationContext applicationContext;
 
@@ -38,40 +38,38 @@ public class ButtonsResponseHandler implements ResponseHandler<Void>, Applicatio
 
     public static String formatFieldName(String fieldName) {
         return Arrays.stream(Optional.ofNullable(fieldName).orElse("").split(DEFAULT_FORMATTER_PATTERN))
-                .map(word -> {
-                    return null != word && !word.trim().isEmpty() ? Character.toUpperCase(word.charAt(0)) + word.substring(1) : "";
-                })
+                .map(word -> null != word && !word.trim().isEmpty() ? Character.toUpperCase(word.charAt(0)) + word.substring(1) : "")
                 .collect(Collectors.joining(" "));
     }
-	
+
 
 	@Override
 	public Void apply(Response t) {
 		if (t instanceof WorkResponse response) {
 			Object o = response.getFormObject();
 			WorkMode wm = response.getMode();
-			
+
 			ButtonList obl = (ButtonList) response.getData().get(ButtonList.KEY);
-			
+
 			if ((obl != null) && (obl.getContents().size() > 0)) {
 				return null;
 			}
-			
+
 			obl = new ButtonList();
 			response.getData().put(ButtonList.KEY, obl);
-			
-			
+
+
 			final ButtonList bl = obl;
-			
+
 			initExposedHandlerMappings();
-		
+
 			List<ChatMapping<ChatButton>> mappings = exposedHandlerMappings.stream()
 					.flatMap(hm -> hm.getAllHandlers(t.getAddress(), null).stream())
 					.filter(cm -> exposedMatchesObject(cm.getMapping(), o))
 					.filter(cm -> cm.isButtonFor(o, wm))
 					.collect(Collectors.toList());
-		
-			
+
+
 			mappings.forEach(cm -> {
 						ChatButton e = cm.getMapping();
 						String value = cm.getUniqueName();
@@ -79,10 +77,10 @@ public class ButtonsResponseHandler implements ResponseHandler<Void>, Applicatio
 						text = StringUtils.hasText(text) ? text : formatFieldName(cm.getHandlerMethod().getMethod().getName());
 						bl.add(new Button(value, Type.ACTION, text));
 					});
-			
+
 			Collections.sort((List<Button>) bl.getContents());
 		}
-		
+
 		return null;
 	}
 
@@ -95,12 +93,12 @@ public class ButtonsResponseHandler implements ResponseHandler<Void>, Applicatio
 				.collect(Collectors.toList());
 		}
 	}
-	
+
 	protected boolean exposedMatchesObject(ChatButton e, Object o) {
 		if ((o != null) && (e.value().isAssignableFrom(o.getClass()))) {
 			return true;
 		}
-	
+
 		return false;
 	}
 

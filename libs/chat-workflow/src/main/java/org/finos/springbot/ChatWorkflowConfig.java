@@ -41,13 +41,13 @@ import org.springframework.util.ErrorHandler;
 import org.springframework.validation.Validator;
 
 @Configuration
-@Import(value =  { 
-		ResolverConfig.class, 
+@Import(value =  {
+		ResolverConfig.class,
 		FormEditConfig.class,
 		DataHandlerConfig.class,
 		MeterRegistryConfig.class})
 public class ChatWorkflowConfig {
-	
+
 	@Bean
 	@ConditionalOnMissingBean
 	@Lazy
@@ -59,43 +59,43 @@ public class ChatWorkflowConfig {
 	@ConditionalOnMissingBean
 	public WorkResponseConverter workResponseConverter(ResponseHandlers rh) {
 		return new WorkResponseConverter(rh);
-	} 
-	
+	}
+
 	@Bean
 	@ConditionalOnMissingBean
 	public ContentResponseConverter contentResponseConverter(ResponseHandlers rh) {
 		return new ContentResponseConverter(rh);
-	} 
-	
+	}
+
 	@Bean
 	@ConditionalOnMissingBean
 	public CollectionResponseConverter collectionResponseConverter(ResponseHandlers rh) {
 		return new CollectionResponseConverter(rh);
-	} 
-	
+	}
+
 	@Bean
 	@ConditionalOnMissingBean
 	public ButtonsResponseHandler buttonsResponseHandler() {
 		return new ButtonsResponseHandler();
-	} 
-	
+	}
+
 	@Bean
 	@ConditionalOnMissingBean
 	public ChatListResponseHandler chatListResponseHandler() {
 		return new ChatListResponseHandler(allConversations());
-	} 
-	
+	}
+
 	@Bean
 	@ConditionalOnMissingBean
 	public UserListResponseHandler userListResponseHandler() {
 		return new UserListResponseHandler(allConversations());
-	} 
-	
+	}
+
 	@Bean
 	@ConditionalOnMissingBean
 	public ErrorHandler chatWorkflowErrorHandler(ResponseHandlers rh) {
 		return new ChatWorkflowErrorHandler(rh, "default-error");
-	} 
+	}
 
 	@Bean
 	@ConditionalOnMissingBean
@@ -103,26 +103,26 @@ public class ChatWorkflowConfig {
 			ResponseConverters converters, AllConversations conversations) {
 		return new ChatButtonChatHandlerMapping(wrf, converters, conversations);
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean
-	public ChatRequestChatHandlerMapping chatHandlerMapping(WorkflowResolversFactory wrf, 
+	public ChatRequestChatHandlerMapping chatHandlerMapping(WorkflowResolversFactory wrf,
 			ResponseConverters converters, AllConversations conversations) {
 		return new ChatRequestChatHandlerMapping(wrf, converters, conversations);
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean
 	public ChatHandlerMappingActionConsumer methodCallMessageConsumer(List<ChatHandlerMapping<?>> chatHandlerMappings, ErrorHandler eh, List<AddressingChecker> ac) {
 		return new ChatHandlerMappingActionConsumer(chatHandlerMappings, eh, ac);
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean
 	public AllConversations allConversations() {
 		return new AllConversations();
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean
 	public AllHistory allHistory() {
@@ -133,42 +133,30 @@ public class ChatWorkflowConfig {
 	@ConditionalOnMissingBean
 	public ResponseHandlers responseHandlers(List<ResponseHandler<?>> rh) {
 		List<ResponseHandler<?>> sorted = new ArrayList<>(rh);
-		Collections.sort(sorted, OrderComparator.INSTANCE);
-		return new ResponseHandlers() {
-			
-			@Override
-			public void accept(Response t) {
-				sorted.forEach(rh -> rh.apply(t));
-			}
-		};
+		sorted.sort(OrderComparator.INSTANCE);
+		return t -> sorted.forEach(rh1 -> rh1.apply(t));
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean
 	public ResponseConverters responseConverters(List<ResponseConverter> rh) {
 		List<ResponseConverter> sorted = new ArrayList<>(rh);
-		Collections.sort(sorted, OrderComparator.INSTANCE);
-		return new ResponseConverters() {
-			
-			@Override
-			public void accept(Object t, ChatHandlerExecutor che) {
-				sorted.forEach(rh -> rh.accept(t, che));
-			}
-		};
+		sorted.sort(OrderComparator.INSTANCE);
+		return (t, che) -> sorted.forEach(rh1 -> rh1.accept(t, che));
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean
 	public FormValidationProcessor formValidationProcessor(ResponseHandlers rh, Validator validator) {
 		return new FormValidationProcessor(validator, rh);
 	}
-	
 
-	
+
+
 	@Bean
 	@ConditionalOnMissingBean
 	public HeaderTagResponseHandler headerTagResponsehandler() {
 		return new HeaderTagResponseHandler();
-	} 
+	}
 
 }

@@ -13,7 +13,7 @@ public class HeaderTagResponseHandler implements ResponseHandler<Void> {
 
 	/**
 	 * This ensures that the JSON data being sent will contain a HeaderDetails
-	 * object, which contains a list of tags used for indexing the data content of the 
+	 * object, which contains a list of tags used for indexing the data content of the
 	 * {@link Work} in the message.
 	 */
 	@Override
@@ -30,7 +30,7 @@ public class HeaderTagResponseHandler implements ResponseHandler<Void> {
 			// make sure all tags are unique, maintain order from original.
 			Set<String> tags = new LinkedHashSet<>();
 			tags.addAll(hd.getTags());
-			
+
 			// check through other stuff in the json response
 			for (Object o2 : workResponse.getData().values()) {
 				Work w = o2 != null ? o2.getClass().getAnnotation(Work.class) : null;
@@ -38,12 +38,12 @@ public class HeaderTagResponseHandler implements ResponseHandler<Void> {
 					tags.addAll(TagSupport.classTags(o2));
 				}
 			}
-			
-			
-			hd.setTags(new ArrayList<String>(tags));
+
+
+			hd.setTags(new ArrayList<>(tags));
 
 		}
-		
+
 		return null;
 	}
 

@@ -37,17 +37,17 @@ import com.azure.storage.blob.specialized.BlobInputStream;
 import reactor.core.publisher.Mono;
 
 @SpringBootTest(classes = {
-		MockTeamsConfiguration.class, 
+		MockTeamsConfiguration.class,
 		DataHandlerConfig.class
 })
 @ActiveProfiles("teams")
 public class AzureBlobStateStorageTest extends AbstractStateStorageTest {
 
 	private static final String THE_FILE_CONTENTS = "{\"a\": \"b\"}";
-	
+
 	@Autowired
 	EntityJsonConverter ejc;
-	
+
 	@BeforeEach
 	public void setup() {
 		this.tss = new AzureBlobStateStorage(createBlobServiceClientMock(), ejc, "test");
@@ -60,7 +60,7 @@ public class AzureBlobStateStorageTest extends AbstractStateStorageTest {
 	BlobClient nonFileBlobClient;
 	BlobClient theFileABlobClient;
 	BlobClient theFileBBlobClient;
-	
+
 	private BlobServiceClient createBlobServiceClientMock() {
 		bsc = Mockito.mock(BlobServiceClient.class);
 		bcc = Mockito.mock(BlobContainerClient.class);
@@ -71,16 +71,16 @@ public class AzureBlobStateStorageTest extends AbstractStateStorageTest {
 		theFileBBlobClient  = Mockito.mock(BlobClient.class);
 		Mockito.when(bsc.getBlobContainerClient("test"))
 			.thenReturn(bcc);
-		
-		
+
+
 		Mockito.when(bcc.exists()).thenReturn(true);
-		
+
 		Mockito.when(bcc.getBlobClient("thefile")).thenReturn(theFileBlobClient);
 		Mockito.when(bcc.getBlobClient("theotherfile")).thenReturn(theOtherFileBlobClient);
 		Mockito.when(bcc.getBlobClient("nonfile")).thenReturn(nonFileBlobClient);
 		Mockito.when(bcc.getBlobClient("thefile/a")).thenReturn(theFileABlobClient);
 		Mockito.when(bcc.getBlobClient("thefile/b")).thenReturn(theFileBBlobClient);
-		
+
 		return bsc;
 	}
 
@@ -96,21 +96,21 @@ public class AzureBlobStateStorageTest extends AbstractStateStorageTest {
 	private void setupBlobSearch(Map<String, List<String>> results) {
 		Mockito.when(bsc.findBlobsByTags(
 				Mockito.any(),
-				Mockito.eq(Duration.ofSeconds(5)), 
+				Mockito.eq(Duration.ofSeconds(5)),
 				Mockito.eq(Context.NONE)))
-			.thenAnswer((a) -> {	
+			.thenAnswer((a) -> {
 				FindBlobsOptions fbo = a.getArgument(0);
 				List<String> res = results.get(fbo.getQuery());
 				if (res != null) {
-					return new PagedIterable<TaggedBlobItem>(
-						new PagedFlux<TaggedBlobItem>(
-							() -> Mono.just(new PagedResponseBase<Object, TaggedBlobItem>(null, 200, null, 
-									res.stream().map(s -> new TaggedBlobItem("test", s)).collect(Collectors.toList()),
-									null, null))));
+					return new PagedIterable<>(
+                            new PagedFlux<>(
+                                    () -> Mono.just(new PagedResponseBase<>(null, 200, null,
+                                            res.stream().map(s -> new TaggedBlobItem("test", s)).collect(Collectors.toList()),
+                                            null, null))));
 				} else {
 					System.out.println("no match for "+fbo.getQuery());
-					return new PagedIterable<TaggedBlobItem>(
-						new PagedFlux<TaggedBlobItem>(() -> Mono.empty()));
+					return new PagedIterable<>(
+                            new PagedFlux<>(() -> Mono.empty()));
 				}
 			});
 	}
@@ -118,19 +118,19 @@ public class AzureBlobStateStorageTest extends AbstractStateStorageTest {
 	private void allowReadingFromTheFile() throws IOException {
 		Mockito.when(theFileBlobClient.openInputStream()).thenAnswer((a) -> setupBlobInputStream());
 	}
-	
+
 	private void allowReadingFromTheOtherFile() throws IOException {
 		Mockito.when(theOtherFileBlobClient.openInputStream()).thenAnswer((a) -> setupBlobInputStream());
 	}
-	
+
 	private void allowReadingFromTheFileA() throws IOException {
 		Mockito.when(theFileABlobClient.openInputStream()).thenAnswer((a) -> setupBlobInputStream());
 	}
-	
+
 	private void allowReadingFromTheFileB() throws IOException {
 		Mockito.when(theFileBBlobClient.openInputStream()).thenAnswer((a) -> setupBlobInputStream());
 	}
-	
+
 
 	private BlobInputStream setupBlobInputStream() throws IOException {
 		BlobInputStream bis = Mockito.mock(BlobInputStream.class);
@@ -152,35 +152,33 @@ public class AzureBlobStateStorageTest extends AbstractStateStorageTest {
 	private void allowWritingToTheFile() {
 		mockBlobOutputStream(theFileBlobClient);
 	}
-	
+
 	private void allowWritingToTheOtherFile() {
 		mockBlobOutputStream(theOtherFileBlobClient);
 	}
-	
+
 	private void allowWritingToTheSlashFile() {
 		mockBlobOutputStream(theFileABlobClient);
 	}
-	
+
 	private void allowWritingToTheOtherSlashFile() {
 		mockBlobOutputStream(theFileBBlobClient);
 	}
-	
-	
-	
+
+
+
 	private void mockBlobOutputStream(BlobClient bc) {
-		Mockito.doAnswer(new Answer<Void>() {
-		    public Void answer(InvocationOnMock a) {
-				try {
-					OutputStream os = a.getArgument(0);
-					OutputStreamWriter osw = new OutputStreamWriter(os);
-					osw.write(THE_FILE_CONTENTS);
-					osw.close();
-				} catch (IOException e) {
-				}
-				
-				return null;
-		    }
-		}).when(bc).download(Mockito.any());
+		Mockito.doAnswer((Answer<Void>) a -> {
+            try {
+                OutputStream os = a.getArgument(0);
+                OutputStreamWriter osw = new OutputStreamWriter(os);
+                osw.write(THE_FILE_CONTENTS);
+                osw.close();
+            } catch (IOException e) {
+            }
+
+            return null;
+        }).when(bc).download(Mockito.any());
 	}
 
 	@Override
@@ -190,16 +188,16 @@ public class AzureBlobStateStorageTest extends AbstractStateStorageTest {
 		allowReadingFromTheFile();
 		allowWritingToTheOtherFile();
 		allowReadingFromTheOtherFile();
-		
+
 		Map<String, List<String>> queries = new HashMap<>();
 		queries.put("@container='test' AND date>='20220501'", Arrays.asList("thefile","theotherfile"));
 		queries.put("@container='test' AND date>='20220501' AND name='rob'", Arrays.asList("thefile","theotherfile"));
 		queries.put("@container='test' AND date<'20220601'", Arrays.asList("thefile","theotherfile"));
 		setupBlobSearch(queries);
-		
+
 		super.testStoreWithTagDates();
 	}
-	
+
 	@Override
 	@Test
 	public void testSlashStoreWithMultipleDirectories() throws IOException {
@@ -207,13 +205,13 @@ public class AzureBlobStateStorageTest extends AbstractStateStorageTest {
 		allowWritingToTheOtherSlashFile();
 		allowReadingFromTheFileA();
 		allowReadingFromTheFileB();
-		
+
 		Map<String, List<String>> queries = new HashMap<>();
 		queries.put("@container='test' AND addressable='one' AND object1='tag'", Arrays.asList("thefile/a"));
 		queries.put("@container='test' AND addressable='two' AND object2='tag'", Arrays.asList("thefile/b"));
-		
+
 		setupBlobSearch(queries);
-		
+
 		super.testSlashStoreWithMultipleDirectories();
 	}
 }
