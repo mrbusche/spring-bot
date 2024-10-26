@@ -34,15 +34,15 @@ import com.azure.storage.blob.models.TaggedBlobItem;
 import com.azure.storage.blob.options.FindBlobsOptions;
 
 /**
- * This uses Azure's blob storage to store the data-history of chats with the bot. 
- * 
+ * This uses Azure's blob storage to store the data-history of chats with the bot.
+ *
  * @author rob@kite9.com
  *
  */
 public class AzureBlobStateStorage extends AbstractStateStorage {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(AzureBlobStateStorage.class);
-	
+
 	private final BlobContainerClient bcc;
 	private final BlobServiceClient bsc;
 	private final EntityJsonConverter ejc;
@@ -54,7 +54,7 @@ public class AzureBlobStateStorage extends AbstractStateStorage {
 		this.ejc = ejc;
 		this.container = container;
 	}
-	
+
 	public String compileQuery(List<Filter> filters) {
 		StringBuilder sb = new StringBuilder();
 		sb.append("@container='");
@@ -67,20 +67,20 @@ public class AzureBlobStateStorage extends AbstractStateStorage {
 			sb.append("'");
 			sb.append(getAzureTag(""+f.value));
 			sb.append("'");
-			
+
 		});
-		
+
 		return sb.toString();
 	}
 
 	private String getAzureTag(String s) {
 		return s.replaceAll("[^0-9a-zA-Z]","_");
 	}
-	
+
 	private String getAzurePath(String s) {
 		return s.replaceAll("[^0-9a-zA-Z/]","_");
 	}
-	
+
 	private Map<String, String> getAzureTags(Map<String, String> in) {
 		return in.entrySet().stream()
 			.collect(Collectors.toMap(e -> getAzureTag(e.getKey()), e -> getAzureTag(e.getValue())));
@@ -95,18 +95,18 @@ public class AzureBlobStateStorage extends AbstractStateStorage {
                 throw new TeamsException("Couldn't create blob container for "+bsc.getAccountUrl());
             }
         }
-			
+
 		return bcc;
 	}
-	
+
 
 	@Override
 	public void store(String file, Map<String, String> tags, Map<String, Object> data) {
 		file = getAzurePath(file);
 		try {
-			if ((tags != null) && (tags.size() > 0)) { 
+			if ((tags != null) && (tags.size() > 0)) {
 				BlobClient bc = bcc.getBlobClient(file);
-				
+
 				String out = ejc.writeValue(data);
 				byte[] dataBytes = out.getBytes();
 				bc.upload(new ByteArrayInputStream(dataBytes), dataBytes.length);
@@ -117,23 +117,23 @@ public class AzureBlobStateStorage extends AbstractStateStorage {
 		} catch (Exception e) {
 			throw new TeamsException("Cannot persist data to "+file, e);
 		}
-		
+
 	}
 
-	private static final Map<String, Object> DONE = new HashMap<String, Object>();
+	private static final Map<String, Object> DONE = new HashMap<>();
 
 	class DuplicateCheckingIterator implements Iterator<Map<String, Object>> {
-		
-		Set<String> done = new HashSet<String>();
+
+		Set<String> done = new HashSet<>();
 		Iterator<TaggedBlobItem> underlying;
 		Map<String, Object> next = null;
-		
+
 		public DuplicateCheckingIterator(Iterator<TaggedBlobItem> underlying) {
 			super();
 			this.underlying = underlying;
 			consumeNext();
 		}
-		
+
 		private void consumeNext() {
 			// while loop is used in case we can't get certain blobs
 			while (underlying.hasNext()) {
@@ -144,11 +144,11 @@ public class AzureBlobStateStorage extends AbstractStateStorage {
 				} else if (next != null) {
 					return;
 				}
-			} 
-			
+			}
+
 			next = null;
 		}
-		
+
 		@Override
 		public boolean hasNext() {
 			return next != null;
@@ -164,16 +164,16 @@ public class AzureBlobStateStorage extends AbstractStateStorage {
 				throw new NoSuchElementException();
 			}
 		}
-		
-		
+
+
 		private Map<String, Object> convert(TaggedBlobItem tbi) {
 			String name = tbi.getName();
 			if (done.contains(name)) {
 				return DONE;
-			} 
-			
+			}
+
 			done.add(name);
-			
+
 			try {
 				String json = StreamUtils.copyToString(bcc.getBlobClient(name).openInputStream(), StandardCharsets.UTF_8);
 				EntityJson data = ejc.readValue(json);
@@ -187,25 +187,21 @@ public class AzureBlobStateStorage extends AbstractStateStorage {
 
 	@Override
 	public Iterable<Map<String, Object>> retrieve(List<Filter> tags, boolean singleResultOnly) {
-		return new Iterable<Map<String,Object>>() {
-			
-			@Override
-			public Iterator<Map<String, Object>> iterator() {
-				try {
-					String query = compileQuery(tags);
-					FindBlobsOptions fbo = new FindBlobsOptions(query).setMaxResultsPerPage(singleResultOnly ? 1 : 20);
-					PagedIterable<TaggedBlobItem> pi = bsc.findBlobsByTags(fbo, Duration.ofSeconds(5), Context.NONE);
-					Iterator<TaggedBlobItem> underlying = pi.iterator();		
-					return new DuplicateCheckingIterator(underlying);
-				} catch (Exception e) {
-					LOG.error("Couldn't retrieve from AzureBlobStorage with tags "+tags, e) ;
-					return Collections.emptyIterator();
-				}
-			}
-		};
-		
-	}	
-	
+		return () -> {
+            try {
+                String query = compileQuery(tags);
+                FindBlobsOptions fbo = new FindBlobsOptions(query).setMaxResultsPerPage(singleResultOnly ? 1 : 20);
+                PagedIterable<TaggedBlobItem> pi = bsc.findBlobsByTags(fbo, Duration.ofSeconds(5), Context.NONE);
+                Iterator<TaggedBlobItem> underlying = pi.iterator();
+                return new DuplicateCheckingIterator(underlying);
+            } catch (Exception e) {
+                LOG.error("Couldn't retrieve from AzureBlobStorage with tags " + tags, e);
+                return Collections.emptyIterator();
+            }
+        };
+
+	}
+
 	@Override
 	public Optional<Map<String, Object>> retrieve(String file) {
 		try {

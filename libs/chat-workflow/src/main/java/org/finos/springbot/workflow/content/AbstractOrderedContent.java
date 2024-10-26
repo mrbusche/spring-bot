@@ -3,7 +3,7 @@ package org.finos.springbot.workflow.content;
 import java.util.List;
 
 public abstract class AbstractOrderedContent<C extends Content> implements OrderedContent<C> {
-	
+
 	private final List<C> c;
 
 	public AbstractOrderedContent(List<C> c) {
@@ -38,7 +38,7 @@ public abstract class AbstractOrderedContent<C extends Content> implements Order
 	@Override
 	public String getText() {
 		return getContents().stream()
-			.map(e -> e.getText())
+			.map(Content::getText)
 			.reduce("", (a, b) -> {
 				if (a.length() == 0 || b.length() == 0) {
 					return a+b;
@@ -47,5 +47,5 @@ public abstract class AbstractOrderedContent<C extends Content> implements Order
 				}
 			});
 	}
-	
+
 }

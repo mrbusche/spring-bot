@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 
 /**
  * Builds help menu from the @ChatRequest annotations.
- * 
+ *
  * @author rob@kite9.com
  *
  */
@@ -34,14 +34,12 @@ public class HelpController implements ApplicationContextAware {
 	public HelpController() {
 		super();
 	}
-	
-	
+
+
 	protected String defaultDescription(Method m) {
 		return Arrays.stream(Optional.ofNullable(m.getName()).orElse("").split(DEFAULT_FORMATTER_PATTERN))
-			.map(word -> {
-				return null != word && !word.trim().isEmpty() ? Character.toUpperCase(word.charAt(0)) + word.substring(1)
-					: "";
-			})
+			.map(word -> null != word && !word.trim().isEmpty() ? Character.toUpperCase(word.charAt(0)) + word.substring(1)
+                : "")
 			.collect(Collectors.joining(" "));
 	}
 
@@ -62,11 +60,11 @@ public class HelpController implements ApplicationContextAware {
 
 	private boolean includeInHelp(ChatMapping<ChatRequest> hm) {
 		ChatRequest e = hm.getMapping();
-		
+
 		if (!e.addToHelp()) {
 			return false;
 		}
-		
+
 		return true;
 	}
 
@@ -93,10 +91,10 @@ public class HelpController implements ApplicationContextAware {
 			exposedHandlers = Arrays.stream(ctx.getBeanNamesForType(rt))
 				.map(bn -> (ChatHandlerMapping<ChatRequest>) ctx.getBean(bn))
 				.collect(Collectors.toList());
-				
+
 		}
 	}
-	
+
 	private ApplicationContext ctx;
 
 	@Override

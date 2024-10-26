@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package org.finos.springbot.example.todo;
 
@@ -20,7 +20,7 @@ import jakarta.validation.Valid;
 public class ToDoList {
 
 	@Valid
-	private List<ToDoItem> items = new ArrayList<ToDoItem>();
+	private List<ToDoItem> items = new ArrayList<>();
 
 	public ToDoList() {
 		super();
@@ -39,7 +39,7 @@ public class ToDoList {
 		this.items = items;
 	}
 
-	
-	
-	
+
+
+
 }

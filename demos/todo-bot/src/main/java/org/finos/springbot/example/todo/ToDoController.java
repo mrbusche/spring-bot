@@ -3,6 +3,7 @@ package org.finos.springbot.example.todo;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,14 +31,14 @@ public class ToDoController {
 		ToDoList out = new ToDoList();
 		return out;
 	}
-	
+
 	private void reNumber(ToDoList l) {
 		int initial = 1;
 		for (ToDoItem toDoItem : l.getItems()) {
 			toDoItem.setNumber(initial++);
 		}
 	}
-	
+
 	@ChatRequest(value="add", description = "Add an item")
 	@ChatButton(value = ToDoList.class, buttonText = "Add")
 	@ChatResponseBody(workMode = WorkMode.EDIT)
@@ -46,7 +47,7 @@ public class ToDoController {
 		out.assignTo = author;
 		return out;
 	}
-	
+
 	@ChatButton(value = NewItemDetails.class, buttonText = "add")
 	public ToDoList add(NewItemDetails a, User u, Optional<ToDoList> toDo) {
 		ToDoList out = toDo.orElse(init());
@@ -54,7 +55,7 @@ public class ToDoController {
 		reNumber(out);
 		return out;
 	}
-	
+
 	@ChatButton(value = NewItemDetails.class, buttonText = "cancel")
 	public ToDoList cancel(Optional<ToDoList> toDo) {
 		ToDoList out = toDo.orElse(init());
@@ -68,7 +69,7 @@ public class ToDoController {
 		reNumber(out);
 		return out;
 	}
-	
+
 	@ChatRequest(value="edit", description = "Edit current list of items")
 	@ChatResponseBody(workMode = WorkMode.EDIT)
 	public ToDoList edit(Optional<ToDoList> in) {
@@ -76,8 +77,8 @@ public class ToDoController {
 		reNumber(out);
 		return out;
 	}
-	
-	
+
+
 	private Integer parseInt(Word w) {
 		try {
 			return Integer.parseInt(w.getText());
@@ -85,11 +86,11 @@ public class ToDoController {
 			return null;
 		}
 	}
-	
+
 	private Set<Integer> numbers(List<Word> m) {
 		return m.stream()
-			.map(w -> parseInt(w))
-			.filter(i -> i != null)
+			.map(this::parseInt)
+			.filter(Objects::nonNull)
 			.collect(Collectors.toSet());
 	}
 
@@ -97,33 +98,28 @@ public class ToDoController {
 	public ToDoList delete(@ChatVariable(name = "item") List<Word> toDelete, Optional<ToDoList> toDo) {
 		ToDoList out = toDo.orElse(init());
 		Set<Integer> toRemove = numbers(toDelete);
-		for (Iterator<ToDoItem> iterator = out.getItems().iterator(); iterator.hasNext();) {
-			ToDoItem item = iterator.next();
-			if (toRemove.contains(item.getNumber())) {
-				iterator.remove();
-			}	
-		}
+        out.getItems().removeIf(item -> toRemove.contains(item.getNumber()));
 		reNumber(out);
 		return out;
 	}
 
 	private List<Response> changeStatus(ToDoList on, List<Word> words, User u, Status s) {
-		List<Response> out = new ArrayList<Response>();
+		List<Response> out = new ArrayList<>();
 		Set<Integer> toUpdate = numbers(words);
 
 		on.getItems().stream()
 			.filter(i -> toUpdate.contains(i.getNumber()))
 			.forEach(i -> {
-				i.setAssignTo(u);	
+				i.setAssignTo(u);
 				i.setStatus(s);
 				out.add(createNotification(i));
 		});
-		
+
 		reNumber(on);
-		
+
 		return out;
 	}
-	
+
 	private Response createNotification(ToDoItem i) {
 		return new MessageResponse(i.getCreator(), Message.of("Updated '"+i.getDescription()+"' to status"+i.getStatus()));
 	}
@@ -136,7 +132,7 @@ public class ToDoController {
 		responses.add(new WorkResponse(theRoom, out, WorkMode.VIEW));
 		return responses;
 	}
-	
+
 	@ChatRequest(value="assign {items} {by}", description = "Assign items, e.g. \"/assign 1 3 5 @Suresh Rupnar\"")
 	public ToDoList assign(@ChatVariable("items") List<Word> words, @ChatVariable("by") Optional<User> by, User a, Optional<ToDoList> toDo) {
 		ToDoList out = toDo.orElse(init());
@@ -144,17 +140,17 @@ public class ToDoController {
 		changeStatus(out, words, u, Status.OPEN);
 		return out;
 	}
-	
+
 	@ChatRequest(value="send")
 	@ChatResponseBody(workMode = WorkMode.EDIT)
 	public SendToRoom sendToRoom() {
 		return new SendToRoom();
 	}
-	
+
 	@ChatButton(value=SendToRoom.class, buttonText="Send")
 	public WorkResponse sendToRoom(SendToRoom theForm, ToDoList tdl) {
 		return new WorkResponse(theForm.room, tdl, WorkMode.VIEW);
-		
+
 	}
-	
+
 }

@@ -33,7 +33,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 			"logging.level.org.finos.springbot=TRACE"
 		})
 public abstract class AbstractHandlerMappingTest {
-	
+
 	public static final String BOT_NAME = "Dummy Bot";
 	public static final String BOT_EMAIL = "dummybot@example.com";
 	public static final long BOT_ID = 654321l;
@@ -44,10 +44,10 @@ public abstract class AbstractHandlerMappingTest {
 
 	@Autowired
 	protected OurController oc;
-	
+
 	@Autowired
 	ChatRequestChatHandlerMapping hm;
-	
+
 	@Test
 	public void checkMappings() throws Exception {
 		Assertions.assertEquals(17, hm.getHandlerMethods().size());
@@ -55,19 +55,19 @@ public abstract class AbstractHandlerMappingTest {
 	}
 
 	protected abstract List<ChatMapping<ChatRequest>> getMappingsFor(Message s) throws Exception;
-	
+
 	protected abstract String getMessageData();
-	
+
 	protected abstract String getMessageContent();
 
 	protected abstract void execute(String s) throws Exception;
-	
+
 	@Test
 	public void checkWildcardMapping() throws Exception {
 		List<ChatMapping<ChatRequest>> mapped = getMappingsFor(Message.of("ban zebedee"));
 		Assertions.assertTrue(mapped.size()  == 1);
 	}
-	
+
 	@Test
 	public void checkHandlerExecutors() throws Exception {
 		execute("ban zebedee");
@@ -75,7 +75,7 @@ public abstract class AbstractHandlerMappingTest {
 		Assertions.assertEquals(1,  oc.lastArguments.size());
 		Assertions.assertEquals(Word.of("zebedee"),oc.lastArguments.getFirst());
 	}
-	
+
 	@Test
 	public void checkMethodCall() throws Exception {
 		execute("list");
@@ -83,19 +83,19 @@ public abstract class AbstractHandlerMappingTest {
 		Assertions.assertEquals(1,  oc.lastArguments.size());
 		Assertions.assertTrue(Message.class.isAssignableFrom(oc.lastArguments.getFirst().getClass()));
 	}
-	
+
 	@Test
 	public void checkNoMethodCall1() throws Exception {
 		execute("excluded");
 		Assertions.assertEquals(null, oc.lastMethod);
 	}
-	
+
 	@Test
 	public void checkNoMethodCall2() throws Exception {
 		execute("excluded2");
 		Assertions.assertEquals(null, oc.lastMethod);
 	}
-	
+
 	@Test
 	public void checkMethodCallWithChatVariables() throws Exception {
 		execute("ban gaurav");
@@ -105,7 +105,7 @@ public abstract class AbstractHandlerMappingTest {
 		Assertions.assertTrue(Word.class.isAssignableFrom(firstArgument.getClass()));
 		Assertions.assertEquals("gaurav", ((Word)firstArgument).getText());
 	}
-	
+
 	@Test
 	public void testAuthorChatVariable() throws Exception {
 		execute("userDetails2 @gaurav");
@@ -114,12 +114,12 @@ public abstract class AbstractHandlerMappingTest {
 		Object firstArgument = oc.lastArguments.getFirst();
 		Assertions.assertTrue(User.class.isAssignableFrom(firstArgument.getClass()));
 		Assertions.assertEquals("gaurav", ((User)firstArgument).getName());
-		
+
 		Object secondArgument = oc.lastArguments.get(1);
 		Assertions.assertTrue(User.class.isAssignableFrom(secondArgument.getClass()));
 		Assertions.assertEquals("@"+ROB_NAME, ((User)secondArgument).getText());
 	}
-	
+
 	@Test
 	public void testUserChatVariable() throws Exception {
 		execute("delete @gaurav");
@@ -128,14 +128,14 @@ public abstract class AbstractHandlerMappingTest {
 		Object firstArgument = oc.lastArguments.getFirst();
 		Assertions.assertTrue(User.class.isAssignableFrom(firstArgument.getClass()));
 		Assertions.assertEquals("gaurav", ((User)firstArgument).getName());
-		
+
 		Object secondArgument = oc.lastArguments.get(1);
 		Assertions.assertTrue(Chat.class.isAssignableFrom(secondArgument.getClass()));
-		Assertions.assertEquals(OurController.SOME_ROOM, ((Chat)secondArgument).getName());
+		Assertions.assertEquals(OurController.SOME_ROOM, ((Chat)secondArgument).name());
 	}
-	
 
-	
+
+
 	@Test
 	public void testCodeblockMapping() throws Exception {
 		execute("update <pre>public static void main(String[] args) {}</pre>");
@@ -145,7 +145,7 @@ public abstract class AbstractHandlerMappingTest {
 		Assertions.assertTrue(CodeBlock.class.isAssignableFrom(firstArgument.getClass()));
 		Assertions.assertEquals("public static void main(String[] args) {}", ((CodeBlock)firstArgument).getText());
 	}
-	
+
 	@Test
 	public void testHelp() throws Exception {
 		execute("help");
@@ -153,7 +153,7 @@ public abstract class AbstractHandlerMappingTest {
 	}
 
 	protected abstract void assertHelpResponse() throws Exception;
-	
+
 
 	@Test
 	public void testCodeblockMapping2() throws Exception {
@@ -164,8 +164,8 @@ public abstract class AbstractHandlerMappingTest {
 		Assertions.assertTrue(CodeBlock.class.isAssignableFrom(firstArgument.getClass()));
 		Assertions.assertEquals("public static void main(String[] args) {}", ((CodeBlock)firstArgument).getText());
 	}
-	
-	
+
+
 
 	@Test
 	public void testTableMapping() throws Exception {
@@ -188,7 +188,7 @@ public abstract class AbstractHandlerMappingTest {
 		Assertions.assertEquals(expected, firstArgument.getColumnNames());
 		Assertions.assertEquals(2, firstArgument.getData().size());
 	}
-	
+
 	@Test
 	public void testMessageResponse() throws Exception {
 		execute("ban rob");
@@ -197,20 +197,20 @@ public abstract class AbstractHandlerMappingTest {
 		System.out.println(message);
 		Assertions.assertTrue(message.contains("banned words: rob"));
 	}
-	
+
 	@Test
 	public void testFormResponse1() throws Exception {
 		execute("form1");
 		String data = getMessageData();
 		Assertions.assertTrue(data.contains("\"id\" : \"go\"") || data.contains("\"name\" : \"go\""));
 	}
-	
+
 	@Test
 	public void testFormResponse2() throws Exception {
 		execute("form2");
 		assertNoButtons();
 	}
-	
+
 	protected abstract void assertNoButtons();
 
 	@Test
@@ -218,26 +218,26 @@ public abstract class AbstractHandlerMappingTest {
 		execute("throwsError");
 		assertThrowsResponse();
 	}
-	
+
 	protected abstract void assertThrowsResponse();
-	
+
 	@SuppressWarnings("unchecked")
 	@Test
 	public void testOptionalPresent() throws Exception {
 		execute("optionals zib zab zob @gaurav pingu");
 		Assertions.assertEquals("doList", oc.lastMethod);
 		Assertions.assertEquals(3,  oc.lastArguments.size());
-		
+
 		Object firstArgument = oc.lastArguments.get(1);
 		Assertions.assertEquals("gaurav", ((Optional<User>)firstArgument).get().getName());
-		
+
 		Object secondArgument = oc.lastArguments.getFirst();
 		Assertions.assertEquals(secondArgument, Arrays.asList(Word.of("zib"), Word.of("zab"), Word.of("zob")));
-		
+
 		Object thirdArgument = oc.lastArguments.get(2);
 		Assertions.assertEquals(Word.of("pingu"), thirdArgument);
 	}
-	
+
 	@Test
 	public void testOptionalMissing() throws Exception {
 		execute("optionals");
@@ -246,37 +246,37 @@ public abstract class AbstractHandlerMappingTest {
 		Object firstArgument = oc.lastArguments.getFirst();
 		Assertions.assertTrue(firstArgument instanceof List);
 		Assertions.assertEquals(0, ((List<?>)firstArgument).size());
-		
+
 		Object secondArgument = oc.lastArguments.get(1);
 		Assertions.assertTrue(secondArgument instanceof Optional);
 		Assertions.assertFalse(((Optional<?>)secondArgument).isPresent());
-		
+
 		Assertions.assertNull(oc.lastArguments.get(2));
-		
+
 	}
-	
+
 	protected abstract void pressButton(String b, Map<String, Object> contents);
-	
+
 	@Test
 	public void testButtonPress() throws Exception {
 		Map<String, Object> form = new HashMap<>();
 		form.put("amount", 45f);
 		form.put("description", "desc");
 		form.put("form", StartClaim.class.getName());
-		
+
 		pressButton(OurController.class.getName()+"-startNewClaim", form);
 		Assertions.assertEquals("startNewClaim", oc.lastMethod);
 		StartClaim sc = (StartClaim) oc.lastArguments.getFirst();
 		Assertions.assertEquals(45f, sc.amount);
 		Assertions.assertEquals("desc", sc.description);
-		
+
 	}
-	
+
 	@Test
 	public void testAttachmentResponse() throws Exception {
-		execute("attachment");		
-		Assertions.assertEquals("attachment", oc.lastMethod);		
-		String data = getMessageContent();		
+		execute("attachment");
+		Assertions.assertEquals("attachment", oc.lastMethod);
+		String data = getMessageContent();
 		Assertions.assertEquals("somefile.txt", data);
 	}
 

@@ -9,18 +9,18 @@ import org.finos.springbot.workflow.annotations.Work;
 
 /**
  * This is used for carrying a set of Item objects, useful for populating dropdowns.
- * 
+ *
  * @author rob@kite9.com
  *
  */
 @Work(index = false)
 public class DropdownList {
-	
+
 	public static class Item {
-		
+
 		String key;
 		String name;
-		
+
 		public Item() {
 			super();
 		}
@@ -29,7 +29,7 @@ public class DropdownList {
 			this.key = key;
 			this.name = name;
 		}
-		
+
 		public String getKey() {
 			return key;
 		}
@@ -42,12 +42,12 @@ public class DropdownList {
 		public void setName(String name) {
 			this.name = name;
 		}
-		
+
 		@Override
 		public int hashCode() {
 			return Objects.hash(key, name);
 		}
-		
+
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -59,10 +59,10 @@ public class DropdownList {
 			Item other = (Item) obj;
 			return Objects.equals(key, other.key) && Objects.equals(name, other.name);
 		}
-		
+
 	}
-	
-	
+
+
 	private Collection<Item> contents;
 
 	public Collection<Item> getContents() {
@@ -74,7 +74,7 @@ public class DropdownList {
 	}
 
 	public DropdownList() {
-		this.contents = new ArrayList<Item>();
+		this.contents = new ArrayList<>();
 	}
 
 	public DropdownList(Collection<Item> arg0) {
@@ -93,5 +93,5 @@ public class DropdownList {
 		return contents.size();
 	}
 
-	
+
 }

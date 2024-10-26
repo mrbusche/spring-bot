@@ -1,26 +1,27 @@
 package org.finos.springbot.workflow.content;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
 /**
  * Represents a table pasted into a chat.
- * 
+ *
  * @author Rob Moffat
  *
  */
 public interface Table extends Content {
 
 	public List<Content> getColumnNames();
-	
+
 	public List<List<Content>> getData();
-	
+
 	public static class TableImpl implements Table {
-		
+
 		private final List<Content> columns;
-		
+
 		private final List<List<Content>> data;
-		
+
 		public TableImpl(List<Content> columns, List<List<Content>> data) {
 			super();
 			this.columns = columns;
@@ -30,19 +31,19 @@ public interface Table extends Content {
 		@Override
 		public String getText() {
 			return getColumnNames().stream()
-				.map(e -> e.getText())
-				.reduce("", (a, b) -> a + " " + b) + 
+				.map(Content::getText)
+				.reduce("", (a, b) -> a + " " + b) +
 				getData().stream()
-				.flatMap(e -> e.stream())
-				.map(e -> e.getText())
+				.flatMap(Collection::stream)
+				.map(Content::getText)
 				.reduce("", (a, b) -> a + " " + b);
 		}
-		
+
 		@Override
 		public List<List<Content>> getData() {
 			return data;
 		}
-		
+
 		@Override
 		public List<Content> getColumnNames() {
 			return columns;
@@ -63,8 +64,8 @@ public interface Table extends Content {
 				return false;
 			}
 		}
-		
-		
+
+
 	};
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })

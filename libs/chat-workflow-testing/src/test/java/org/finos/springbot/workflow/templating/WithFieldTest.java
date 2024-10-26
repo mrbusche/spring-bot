@@ -14,8 +14,8 @@ public class WithFieldTest {
 
     @BeforeEach
     public void init() {
-        this.withField = new WithField<String>() {
-        	
+        this.withField = new WithField<>() {
+
             @Override
             public String apply(Field f, boolean editMode, Variable variable, WithType<String> contentHandler) {
                 return null;

@@ -16,26 +16,26 @@ public class SymphonyTagSupport extends TagSupport {
 		if (!StringUtils.hasText(in)) {
 			return "";
 		}
-		
+
 		return "<hash tag=\""+formatTag(in)+"\" /> ";
 	}
-	
+
 	public static String toCashTag(String in) {
 		if (!StringUtils.hasText(in)) {
 			return "";
 		}
-		
+
 		return "<cash tag=\""+formatTag(in)+"\" /> ";
 	}
-	
+
 	public static String toUserTag(String id) {
 		if (!StringUtils.hasText(id)) {
 			return "";
 		}
-		
+
 		return "<mention uid=\"" + id + "\" />";
 	}
-	
+
 	public static String format(Tag t) {
 		if (t.getTagType() == Tag.CASH) {
 			return toCashTag(t.getName());
@@ -44,10 +44,10 @@ public class SymphonyTagSupport extends TagSupport {
 		} else if (t.getTagType() == Tag.MENTION) {
 			return toUserTag(((SymphonyUser) t).getUserId());
 		}
-		
+
 		return "";
 	}
-	
+
 	public static Set<HashTag> classHashTags(Object in) {
 		if (in instanceof Class<?> class1) {
 			return toHashTags(class1).stream()
@@ -60,11 +60,11 @@ public class SymphonyTagSupport extends TagSupport {
 			return Collections.emptySet();
 		}
 	}
-	
+
 	public static Set<HashTag> toHashTags(Class<?> c) {
 		return toTags(c).stream()
-				.map(e -> new HashTag(e))
+				.map(HashTag::new)
 				.collect(Collectors.toSet());
 	}
-	
+
 }

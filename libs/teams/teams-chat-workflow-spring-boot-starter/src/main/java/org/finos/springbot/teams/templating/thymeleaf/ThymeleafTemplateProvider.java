@@ -31,10 +31,10 @@ public class ThymeleafTemplateProvider extends AbstractResourceTemplateProvider<
 
 	private final ThymeleafTemplater converter;
 	private final SpringTemplateEngine templateEngine;
-	
+
 	public ThymeleafTemplateProvider(
-			String templatePrefix, 
-			String templateSuffix, 
+			String templatePrefix,
+			String templateSuffix,
 			String defaultTemplateName,
 			ResourceLoader rl,
 			ThymeleafTemplater converter
@@ -57,12 +57,12 @@ public class ThymeleafTemplateProvider extends AbstractResourceTemplateProvider<
 			insert = converter.convert(c, Mode.DISPLAY);
 			//throw new UnsupportedOperationException("Don't know how to construct default template for "+r);
 		}
-		
+
 		String defaultTemplate = getTemplateForName(getDefaultTemplateName());
 		String replacedText = defaultTemplate.replace("<!-- Message Content -->", insert);
 		return replacedText;
 	}
-	
+
 	public static boolean needsButtons(Response r) {
 		if (r instanceof WorkResponse response) {
 			ButtonList bl = (ButtonList) response.getData().get(ButtonList.KEY);
@@ -79,7 +79,7 @@ public class ThymeleafTemplateProvider extends AbstractResourceTemplateProvider<
 	}
 
 	public static final Pattern ENTITY_FINDER = Pattern.compile("\\<at\\ key=\\\"(.*?)\"\\>(.*?)<\\/at\\>");
-	
+
 	@Override
 	public MarkupAndEntities applyTemplate(String template, WorkResponse t) {
 		// do thymeleaf rendering here
@@ -88,11 +88,11 @@ public class ThymeleafTemplateProvider extends AbstractResourceTemplateProvider<
 			ctx.setVariable(key, t.getData().get(key));
 		}
 		String done = templateEngine.process(new TemplateSpec(template, TemplateMode.XML), ctx);
-		
+
 		// figure out the entities.
 		Matcher m = ENTITY_FINDER.matcher(done);
-		List<Entity> entities = new ArrayList<Entity>();
-		
+		List<Entity> entities = new ArrayList<>();
+
 		done = MatcherUtil.replaceAll(done, m, x -> {
 			String copy = "<at>"+x.group(2)+"</at>";
 			Mention men = new Mention();
@@ -101,10 +101,10 @@ public class ThymeleafTemplateProvider extends AbstractResourceTemplateProvider<
 			Entity out = new Entity();
 			out.setAs(men);
 			out.setType("mention");
-			entities.add(out);	
+			entities.add(out);
 			return copy;
 		});
-		
+
 		return new MarkupAndEntities(done, entities);
 	}
 }

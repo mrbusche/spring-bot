@@ -19,7 +19,7 @@ import com.symphony.user.UserId;
 @Work(jsonTypeName = { "com.symphony.user.mention", "org.finos.symphony.toolkit.workflow.content.userDef"}, index = false)
 @JsonIncludeProperties({"id", "version"})
 public final class SymphonyUser extends Mention implements User, SymphonyContent, SymphonyAddressable, Tag {
-		
+
 	public SymphonyUser() {
 		super();
 	}
@@ -27,12 +27,12 @@ public final class SymphonyUser extends Mention implements User, SymphonyContent
 	public SymphonyUser(long userId) {
 		super(createTaxonomy(userId, null, null));
 	}
-	
+
 	/**
 	 * This ensures that each element of the taxonomy appears in the same place in the list each time
 	 */
 	private static List<TaxonomyElement> createTaxonomy(Long userId, String displayName, String emailAddress) {
-		List<TaxonomyElement> out = new ArrayList<TaxonomyElement>();
+		List<TaxonomyElement> out = new ArrayList<>();
 		if (userId != null) {
 			out.add(new UserId(""+userId));
 		} else {
@@ -48,18 +48,18 @@ public final class SymphonyUser extends Mention implements User, SymphonyContent
 		} else {
 			out.add(null);
 		}
-		
+
 		return out;
 	}
 
 	public SymphonyUser(long userId, String name, String emailAddress) {
 		super(createTaxonomy(userId, name, emailAddress));
-	}	
-	
+	}
+
 	public SymphonyUser(String name, String emailAddress) {
 		super(createTaxonomy(null, name, emailAddress));
-	}	
-	
+	}
+
 	@JsonIgnore
 	public String getEmailAddress() {
 		return fromTaxonomy(EmailAddress.class);
@@ -86,7 +86,7 @@ public final class SymphonyUser extends Mention implements User, SymphonyContent
 		return MENTION;
 	}
 
-	
+
 	@JsonIgnore
 	public String getUserId() {
 		return fromTaxonomy(UserId.class);
@@ -94,9 +94,9 @@ public final class SymphonyUser extends Mention implements User, SymphonyContent
 
 	@JsonIgnore
 	@Override
-	public String getKey() {
+	public String key() {
 		return getUserId();
 	}
-	
+
 
 }

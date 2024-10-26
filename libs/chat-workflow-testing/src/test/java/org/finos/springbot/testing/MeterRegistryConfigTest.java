@@ -25,9 +25,9 @@ public class MeterRegistryConfigTest {
 		User user = getUser();
 
 		countedService.succeedWithMetrics(chat, user);
-		Counter counter = meterRegistry.get("metric.success").tag("Chat", chat.getName()).tag("User", user.getName())
+		Counter counter = meterRegistry.get("metric.success").tag("Chat", chat.name()).tag("User", user.getName())
 				.counter();
-		
+
 		Assertions.assertEquals(counter.count(), 1);
 	}
 
@@ -36,7 +36,7 @@ public class MeterRegistryConfigTest {
 		Chat chat = new TestRoom("test key", "Test name");
 
 		countedService.succeedWithMetrics(chat, null);
-		Counter counter = meterRegistry.get("metric.success").tag("Chat", chat.getName()).counter();
+		Counter counter = meterRegistry.get("metric.success").tag("Chat", chat.name()).counter();
 		Assertions.assertEquals(counter.count(), 1);
 	}
 
@@ -69,7 +69,7 @@ public class MeterRegistryConfigTest {
 			}
 
 			@Override
-			public String getKey() {
+			public String key() {
 				return null;
 			}
 		};

@@ -8,7 +8,7 @@ import org.finos.springbot.workflow.content.Tag;
 
 /**
  * A channel exists within a team.  You can @-mention it.  It contains conversations.
- * 
+ *
  * @author rob@kite9.com
  *
  */
@@ -17,7 +17,7 @@ public class TeamsChannel implements Chat, TeamsChat, TeamsMention {
 
 	String key;
 	String name;
-	
+
 	public void setKey(String key) {
 		this.key = key;
 	}
@@ -25,7 +25,7 @@ public class TeamsChannel implements Chat, TeamsChat, TeamsMention {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 	public TeamsChannel() {
 		super();
 	}
@@ -36,7 +36,7 @@ public class TeamsChannel implements Chat, TeamsChat, TeamsMention {
 	}
 
 	@Override
-	public String getName() {
+	public String name() {
 		return name;
 	}
 
@@ -53,7 +53,7 @@ public class TeamsChannel implements Chat, TeamsChat, TeamsMention {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof TeamsChannel channel) {
-			return this.key.equals(channel.getKey());
+			return this.key.equals(channel.key());
 		} else {
 			return false;
 		}
@@ -64,8 +64,8 @@ public class TeamsChannel implements Chat, TeamsChat, TeamsMention {
 		return Tag.MENTION;
 	}
 
-	public String getKey() {
+	public String key() {
 		return key;
 	}
-	
+
 }

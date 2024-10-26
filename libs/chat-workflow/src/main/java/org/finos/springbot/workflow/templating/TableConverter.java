@@ -14,11 +14,11 @@ import org.finos.springbot.workflow.actions.form.TableDeleteRows;
 import org.springframework.util.StringUtils;
 
 public class TableConverter<X> extends AbstractTableConverter<X> {
-	
+
 	public TableConverter(TableRendering<X> r) {
 		super(LOW_PRIORITY, r);
 	}
-		
+
 	@Override
 	public boolean canConvert(Field ctx, Type t) {
 		if (t instanceof ParameterizedType type) {
@@ -29,7 +29,7 @@ public class TableConverter<X> extends AbstractTableConverter<X> {
 		}
 	}
 
-	 
+
 	@Override
 	public X apply(Field ctx, WithType<X> controller, Type t, boolean editMode, Variable variable, WithField<X> showDetail) {
 		if (null == showDetail) return getR().description("...");
@@ -40,7 +40,7 @@ public class TableConverter<X> extends AbstractTableConverter<X> {
 		}
 	}
 
-	
+
 	@Override
 	protected X rowDetails(Type t, boolean editMode, Variable variable, WithField<X> cellDetail, WithType<X> controller) {
 		Class<?> elementClass = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
@@ -49,8 +49,8 @@ public class TableConverter<X> extends AbstractTableConverter<X> {
 
 		Variable subVar = variable.index();
 
-		
-		List<X> out = new ArrayList<X>();
+
+		List<X> out = new ArrayList<>();
 
 		if (elementTypeConverter instanceof SimpleTypeConverter) {
 			X cellContent = ((SimpleTypeConverter<X>)elementTypeConverter).apply(null, controller, elementClass, false, subVar, cellDetail);
@@ -62,17 +62,17 @@ public class TableConverter<X> extends AbstractTableConverter<X> {
 			throw new UnsupportedOperationException();
 		}
 
-		
+
 		if (editMode) {
 			X checkbox = getR().tableRowCheckBox(variable, subVar);
 			out.add(getR().tableCell(CENTER_AND_WIDTH_ALIGN, checkbox));
 			X editButton = getR().tableRowEditButton(variable, subVar);
 			out.add(getR().tableCell(CENTER_ALIGN, editButton));
 		}
-		
-		
+
+
 		X row = getR().tableRow(variable, subVar, out);
-		
+
 		return row;
 	}
 
@@ -80,9 +80,9 @@ public class TableConverter<X> extends AbstractTableConverter<X> {
 	protected X rowHeaders(Type t, boolean editMode, Variable variable, WithField<X> cellDetail, WithType<X> controller) {
 		Class<?> elementClass = (Class<?>) ((ParameterizedType) t).getActualTypeArguments()[0];
 		TypeConverter<X> elementTypeConverter = controller.getConverter(null, elementClass, controller);
-		
-		List<X> out = new ArrayList<X>();
- 
+
+		List<X> out = new ArrayList<>();
+
 		if (elementTypeConverter instanceof SimpleTypeConverter) {
 			out.add(getR().tableCell(Collections.emptyMap(), getR().description("Value")));
 		} else if (elementTypeConverter instanceof ComplexTypeConverter) {
@@ -97,7 +97,7 @@ public class TableConverter<X> extends AbstractTableConverter<X> {
 			String newId = variable.getFormFieldName() + "." + TableAddRow.ACTION_SUFFIX;
 			out.add(getR().tableCell(CENTER_ALIGN, getR().button("New", newId)));
 		}
-		
+
 		return getR().tableHeaderRow(out);
 	}
 
@@ -111,7 +111,7 @@ public class TableConverter<X> extends AbstractTableConverter<X> {
     }
 
     protected WithField<X> tableColumnValues() {
-        return new WithField<X>() {
+        return new WithField<>() {
 
             @Override
             public boolean expand() {
@@ -122,9 +122,9 @@ public class TableConverter<X> extends AbstractTableConverter<X> {
             public X apply(Field f, boolean editMode, Variable variable, WithType<X> contentHandler) {
                 Map<String, String> align = numberClass(f.getType()) ? RIGHT_ALIGN : (boolClass(f.getType()) ? CENTER_ALIGN : Collections.emptyMap());
                 Type t = f.getGenericType();
-                return StringUtils.hasText(getFieldNameOrientation(f)) ? 
-                		getR().tableCell(align, contentHandler.apply(null, contentHandler, t, editMode, variable, null))
-                	: getR().tableCell(align, getR().description(""));
+                return StringUtils.hasText(getFieldNameOrientation(f)) ?
+                        getR().tableCell(align, contentHandler.apply(null, contentHandler, t, editMode, variable, null))
+                        : getR().tableCell(align, getR().description(""));
             }
         };
 
@@ -132,7 +132,7 @@ public class TableConverter<X> extends AbstractTableConverter<X> {
 
 
     protected WithField<X> tableColumnNames() {
-        return new WithField<X>() {
+        return new WithField<>() {
 
             @Override
             public boolean expand() {
@@ -141,11 +141,11 @@ public class TableConverter<X> extends AbstractTableConverter<X> {
 
             @Override
             public X apply(Field f, boolean editMode, Variable variable, WithType<X> contentHandler) {
-            	Map<String, String> align = numberClass(f.getType()) ? RIGHT_ALIGN : boolClass(f.getType()) ? CENTER_ALIGN : Collections.emptyMap();
+                Map<String, String> align = numberClass(f.getType()) ? RIGHT_ALIGN : boolClass(f.getType()) ? CENTER_ALIGN : Collections.emptyMap();
                 String fieldNameOrientation = getFieldNameOrientation(f);
                 return getR().tableCell(align, getR().description(fieldNameOrientation == null ? "" : fieldNameOrientation));
             }
         };
     }
-  
+
 }

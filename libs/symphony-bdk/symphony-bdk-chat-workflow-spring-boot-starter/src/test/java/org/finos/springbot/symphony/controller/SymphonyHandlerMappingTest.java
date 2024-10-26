@@ -52,30 +52,30 @@ import com.symphony.bdk.spring.events.RealTimeEvent;
 
 
 @SpringBootTest(classes = {
-		SymphonyMockConfiguration.class, 
+		SymphonyMockConfiguration.class,
 		SymphonyWorkflowConfig.class
 })
 @ActiveProfiles(value = "symphony")
 public class SymphonyHandlerMappingTest extends AbstractHandlerMappingTest {
-	
+
 	@Autowired
 	ChatRequestChatHandlerMapping hm;
-	
+
 	@Autowired
 	PresentationMLHandler mc;
-	
+
 	@Autowired
 	ElementsHandler eh;
-	
+
 	@Autowired
 	EntityJsonConverter ejc;
-	
+
 	@MockBean
 	MessageService messagesApi;
-	
+
 	@Autowired
 	OurController oc;
-	
+
 	ArgumentCaptor<com.symphony.bdk.core.service.message.model.Message> msg;
 
 	@Override
@@ -84,21 +84,21 @@ public class SymphonyHandlerMappingTest extends AbstractHandlerMappingTest {
 		Action a = new SimpleMessageAction(null, null, m, jsonObjects);
 		return hm.getHandlers(a);
 	}
-	
+
 
 	@Override
 	protected void execute(String s) throws Exception {
 		oc.lastArguments = null;
 		oc.lastMethod = null;
 		s = s.replace("@gaurav","<span class=\"entity\" data-entity-id=\"1\">@gaurav</span>");
-		
+
 		Mockito.clearInvocations();
-		
+
 		EntityJson jsonObjects = new EntityJson();
 		jsonObjects.put("1", new SymphonyUser(123l, "gaurav", "gaurav@example.com"));
 		jsonObjects.put("2", new HashTag("SomeTopic"));
 		String dataStr = ejc.writeValue(jsonObjects);
-		
+
 		V4MessageSent v4ms = new V4MessageSent()
 						.message(new V4Message()
 							.user(new V4User()
@@ -111,13 +111,13 @@ public class SymphonyHandlerMappingTest extends AbstractHandlerMappingTest {
 								.streamId(CHAT_ID))
 							.message("<messageML>/"+s+"</messageML>")
 							.data(dataStr));
-		
-		msg = ArgumentCaptor.forClass(com.symphony.bdk.core.service.message.model.Message.class);	
-		
+
+		msg = ArgumentCaptor.forClass(com.symphony.bdk.core.service.message.model.Message.class);
+
 		RealTimeEvent<V4MessageSent> rte = new RealTimeEvent<>(null, v4ms);
-		
+
 		mc.onApplicationEvent(rte);
-		
+
 		Mockito.verify(messagesApi, atMost(1)).send(Mockito.matches(CHAT_ID), msg.capture());
 	}
 
@@ -130,7 +130,7 @@ public class SymphonyHandlerMappingTest extends AbstractHandlerMappingTest {
 	protected String getMessageContent() {
 		return msg.getValue().getContent();
 	}
-	
+
 	protected List<Attachment> getAttachments() {
 		return msg.getValue().getAttachments();
 	}
@@ -139,33 +139,33 @@ public class SymphonyHandlerMappingTest extends AbstractHandlerMappingTest {
 	protected void pressButton(String s, Map<String, Object> values) {
 		oc.lastArguments = null;
 		oc.lastMethod = null;
-		
+
 		Mockito.clearInvocations();
-		
+
 		values.put("action", s);
-		
+
 		V4Initiator initiator = new V4Initiator().user(new V4User()
 					.displayName(ROB_NAME)
 					.email(ROB_EXAMPLE_EMAIL)
 					.userId(ROB_EXAMPLE_ID));
-		
+
 		V4SymphonyElementsAction action = new V4SymphonyElementsAction()
 						.formValues(values)
 						.formId((String) values.remove("form"))
 						.stream(new V4Stream()
 								.streamType(StreamType.TypeEnum.ROOM.getValue())
 								.streamId(CHAT_ID));
-		
-		RealTimeEvent<V4SymphonyElementsAction> event = new RealTimeEvent<V4SymphonyElementsAction>(initiator, action);
-		
-		msg = ArgumentCaptor.forClass(com.symphony.bdk.core.service.message.model.Message.class);	
-		
+
+		RealTimeEvent<V4SymphonyElementsAction> event = new RealTimeEvent<>(initiator, action);
+
+		msg = ArgumentCaptor.forClass(com.symphony.bdk.core.service.message.model.Message.class);
+
 		eh.accept(event);
-		
+
 		Mockito.verify(messagesApi, atMost(1)).send(
 				Mockito.matches(CHAT_ID),
 				msg.capture());
-		
+
 	}
 
 
@@ -173,12 +173,12 @@ public class SymphonyHandlerMappingTest extends AbstractHandlerMappingTest {
 	protected void assertHelpResponse() throws Exception {
 		String msg = getMessageContent();
 		String data = getMessageData();
-		
+
 		JsonNode node = new ObjectMapper().readTree(data);
 		System.out.println(msg);
 		System.out.println(data);
-		
-		
+
+
 		Assertions.assertEquals(14, node.get(WorkResponse.OBJECT_KEY).get("commands").size());
 
 		String desc = null;
@@ -213,7 +213,7 @@ public class SymphonyHandlerMappingTest extends AbstractHandlerMappingTest {
 
 		Assertions.assertTrue(msg.contains("Description"));
 	}
-	
+
 
 	@Test
 	public void testAttachmentResponse() throws Exception {
@@ -224,7 +224,7 @@ public class SymphonyHandlerMappingTest extends AbstractHandlerMappingTest {
 		String contents = StreamUtils.copyToString(first.getContent(), StandardCharsets.UTF_8);
 		Assertions.assertEquals("payload", contents);
 	}
-	
+
 	@Test
 	public void testHashtagMapping() throws Exception {
 		execute("add @gaurav to <span class=\"entity\" data-entity-id=\"2\">#SomeTopic</span>");
@@ -233,12 +233,12 @@ public class SymphonyHandlerMappingTest extends AbstractHandlerMappingTest {
 		Object firstArgument = oc.lastArguments.getFirst();
 		Assertions.assertTrue(User.class.isAssignableFrom(firstArgument.getClass()));
 		Assertions.assertEquals("gaurav", ((User)firstArgument).getName());
-		
+
 		Object secondArgument = oc.lastArguments.get(1);
 		Assertions.assertTrue(HashTag.class.isAssignableFrom(secondArgument.getClass()));
 		Assertions.assertEquals("SomeTopic", ((HashTag)secondArgument).getName());
 	}
-	
+
 
 	@Override
 	protected void assertNoButtons() {

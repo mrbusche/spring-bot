@@ -12,12 +12,12 @@ import org.springframework.core.OrderComparator;
 
 /**
  * Returns the {@link WorkflowResolvers}, which chains together lots of {@link WorkflowResolver} calls into a single one.
- * 
+ *
  * @author moffrob
  *
  */
 public class WorkflowResolversFactory implements ApplicationContextAware {
-	
+
 	/**
 	 * Using the application context here allows us to avoid a dependency loop, where we don't have all the {@link WorkflowResolverFactory}'s
 	 * ready at the same time.
@@ -27,7 +27,7 @@ public class WorkflowResolversFactory implements ApplicationContextAware {
 	public WorkflowResolversFactory() {
 		super();
 	}
-	
+
 
 	public WorkflowResolvers createResolvers(ChatHandlerExecutor che) {
 		final List<WorkflowResolver> resolvers = beanFactory.getBeansOfType(WorkflowResolverFactory.class)
@@ -35,24 +35,19 @@ public class WorkflowResolversFactory implements ApplicationContextAware {
 				.sorted(OrderComparator.INSTANCE)
 				.map(wrf -> wrf.createResolver(che))
 				.collect(Collectors.toList());
-		
-		return new WorkflowResolvers() {
 
-			@Override
-			public Optional<Object> resolve(MethodParameter mp) {
-				for (WorkflowResolver workflowResolver : resolvers) {
-					if (workflowResolver.canResolve(mp)) {
-						Optional<Object> oo = workflowResolver.resolve(mp);
-						if (oo.isPresent()) {
-							return oo;
-						}
-					}
-				}
-				
-				return Optional.empty();
-			}
+		return mp -> {
+            for (WorkflowResolver workflowResolver : resolvers) {
+                if (workflowResolver.canResolve(mp)) {
+                    Optional<Object> oo = workflowResolver.resolve(mp);
+                    if (oo.isPresent()) {
+                        return oo;
+                    }
+                }
+            }
 
-		};
+            return Optional.empty();
+        };
 	}
 
 

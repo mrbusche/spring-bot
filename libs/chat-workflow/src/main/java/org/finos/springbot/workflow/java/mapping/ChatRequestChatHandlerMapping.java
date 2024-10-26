@@ -37,7 +37,7 @@ public class ChatRequestChatHandlerMapping extends AbstractSpringComponentHandle
 
 	private WorkflowResolversFactory wrf;
 	private ResponseConverters converters;
-	
+
 	public ChatRequestChatHandlerMapping(WorkflowResolversFactory wrf, ResponseConverters converters, AllConversations conversations) {
 		super(conversations);
 		this.wrf = wrf;
@@ -76,7 +76,7 @@ public class ChatRequestChatHandlerMapping extends AbstractSpringComponentHandle
 		List<ChatMapping<ChatRequest>> allHandlers = getAllHandlers(a.getAddressable(), a.getUser());
 		List<ChatHandlerExecutor> out = allHandlers.stream()
 				.map(m -> m.getExecutor(a))
-				.filter(f -> f != null)
+				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 
 		return out;
@@ -84,7 +84,7 @@ public class ChatRequestChatHandlerMapping extends AbstractSpringComponentHandle
 
 	protected List<MessageMatcher> createMessageMatchers(ChatRequest mapping, List<WildcardContent> chatVariables) {
 		List<MessageMatcher> parts = Arrays.stream(mapping.value()).map(str -> createContentPattern(str, chatVariables))
-				.map(cp -> new MessageMatcher(cp)).collect(Collectors.toList());
+				.map(MessageMatcher::new).collect(Collectors.toList());
 
 		return parts;
 	}
@@ -136,9 +136,9 @@ public class ChatRequestChatHandlerMapping extends AbstractSpringComponentHandle
 				ParameterizedType pt = (ParameterizedType) t;
 				return new WildcardContent(cv, getContentClassFromType(pt.getActualTypeArguments()[0]), Arity.LIST);
 			}
-			
+
 			throw new UnsupportedOperationException("Can't set up wildcard for type: "+t.getTypeName()+" on "+mapping);
-			
+
 		}).collect(Collectors.toList());
 	}
 
@@ -151,11 +151,11 @@ public class ChatRequestChatHandlerMapping extends AbstractSpringComponentHandle
 					"ChatVariables can only be used for Content subtypes: " + t.getTypeName());
 		}
 	}
-	
+
 	private boolean canBePerformed(Addressable a, User u, ChatRequest cb) {
 		return canBePerformed(a, u, cb.excludeRooms(), cb.rooms(), cb.admin());
 	}
-	
+
 	@Override
 	protected MappingRegistration<ChatRequest> createMappingRegistration(ChatRequest mapping,
 			ChatHandlerMethod handlerMethod) {
@@ -163,86 +163,86 @@ public class ChatRequestChatHandlerMapping extends AbstractSpringComponentHandle
 		List<WildcardContent> wildcards = createWildcardContent(mapping, handlerMethod);
 		List<MessageMatcher> matchers = createMessageMatchers(mapping, wildcards);
 
-		return new MappingRegistration<ChatRequest>(mapping, handlerMethod) {
+		return new MappingRegistration<>(mapping, handlerMethod) {
 
-			@Override
-			public ChatHandlerExecutor getExecutor(Action a) {
+            @Override
+            public ChatHandlerExecutor getExecutor(Action a) {
 
-				if (a instanceof SimpleMessageAction action) {
+                if (a instanceof SimpleMessageAction action) {
 
-					if (!canBePerformedHere(action)) {
-						return null;
-					}
+                    if (!canBePerformedHere(action)) {
+                        return null;
+                    }
 
-					return matchesSimpleMessageAction(action);
-				}
+                    return matchesSimpleMessageAction(action);
+                }
 
-				if (a instanceof FormAction action) {
+                if (a instanceof FormAction action) {
 
-					if (Objects.nonNull(action.getData().get("form")) && !HelpPage.class.isAssignableFrom(action.getData().get("form").getClass())) {
-						return null;
-					}
+                    if (Objects.nonNull(action.getData().get("form")) && !HelpPage.class.isAssignableFrom(action.getData().get("form").getClass())) {
+                        return null;
+                    }
 
-					if (!canBePerformedHere(action)) {
-						return null;
-					}
+                    if (!canBePerformedHere(action)) {
+                        return null;
+                    }
 
-					return matchesFormAction(action);
-				}
+                    return matchesFormAction(action);
+                }
 
-				return null;
-			}
+                return null;
+            }
 
-			private boolean canBePerformedHere(Action a) {
-				ChatRequest cb = getMapping();
+            private boolean canBePerformedHere(Action a) {
+                ChatRequest cb = getMapping();
 
-				return canBePerformed(a.getAddressable(), a.getUser(), cb);
-			}
+                return canBePerformed(a.getAddressable(), a.getUser(), cb);
+            }
 
-			private ChatHandlerExecutor matchesSimpleMessageAction(SimpleMessageAction a) {
-				return pathMatches(a.getMessage(), a);
-			}
+            private ChatHandlerExecutor matchesSimpleMessageAction(SimpleMessageAction a) {
+                return pathMatches(a.getMessage(), a);
+            }
 
-			private ChatHandlerExecutor matchesFormAction(FormAction a) {
-				return pathMatches(Message.of(Word.of(a.getAction())), a);
-			}
+            private ChatHandlerExecutor matchesFormAction(FormAction a) {
+                return pathMatches(Message.of(Word.of(a.getAction())), a);
+            }
 
-			private ChatHandlerExecutor pathMatches(Message words, Action a) {
-				MappingRegistration<?> me = this;
-				ChatHandlerExecutor bestMatch = null;
+            private ChatHandlerExecutor pathMatches(Message words, Action a) {
+                MappingRegistration<?> me = this;
+                ChatHandlerExecutor bestMatch = null;
 
-				for (MessageMatcher messageMatcher : matchers) {
-					Map<ChatVariable, Object> map = new HashMap<>();
+                for (MessageMatcher messageMatcher : matchers) {
+                    Map<ChatVariable, Object> map = new HashMap<>();
 
-					if (messageMatcher.consume(words, map)) {
-						if ((bestMatch == null) || (bestMatch.getReplacements().size() < map.size())) {
-							bestMatch = new AbstractHandlerExecutor(wrf, converters) {
+                    if (messageMatcher.consume(words, map)) {
+                        if ((bestMatch == null) || (bestMatch.getReplacements().size() < map.size())) {
+                            bestMatch = new AbstractHandlerExecutor(wrf, converters) {
 
-								@Override
-								public Map<ChatVariable, Object> getReplacements() {
-									return map;
-								}
+                                @Override
+                                public Map<ChatVariable, Object> getReplacements() {
+                                    return map;
+                                }
 
-								@Override
-								public Action action() {
-									return a;
-								}
+                                @Override
+                                public Action action() {
+                                    return a;
+                                }
 
-								@Override
-								public ChatMapping<?> getOriginatingMapping() {
-									return me;
-								}
-							};
-						}
-					}
-				}
-				return bestMatch;
-			}
+                                @Override
+                                public ChatMapping<?> getOriginatingMapping() {
+                                    return me;
+                                }
+                            };
+                        }
+                    }
+                }
+                return bestMatch;
+            }
 
-			@Override
-			public boolean isButtonFor(Object o, WorkMode m) {
-				return false;
-			}
-		};
+            @Override
+            public boolean isButtonFor(Object o, WorkMode m) {
+                return false;
+            }
+        };
 	}
 }

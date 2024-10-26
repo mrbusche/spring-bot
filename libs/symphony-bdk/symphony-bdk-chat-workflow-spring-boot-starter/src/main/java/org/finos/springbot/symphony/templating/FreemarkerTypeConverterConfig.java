@@ -26,74 +26,74 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @AutoConfigureBefore({SymphonyWorkflowConfig.class})
 public class FreemarkerTypeConverterConfig {
-	
+
 	@Bean
 	protected FreemarkerRendering symphonyFreeMarkerRendering() {
 		return new FreemarkerRendering();
 	}
-	
+
 	@Bean
 	@Qualifier("freemarker")
 	protected BeanConverter<String> fmBeanConverter(FreemarkerRendering r) {
 		return new BeanConverter<>(r);
 	}
-	
+
 	@Bean
 	@Qualifier("freemarker")
 	protected BooleanConverter<String> fmBooleanConverter(FreemarkerRendering r) {
 		return new BooleanConverter<>(r);
 	}
-	
+
 	@Bean
 	@Qualifier("freemarker")
 	protected TableConverter<String> fmCollectionConverter(FreemarkerRendering r) {
 		return new TableConverter<>(r);
 	}
-	
+
 	@Bean
 	@Qualifier("freemarker")
 	protected EnumConverter<String> fmEnumConverter(FreemarkerRendering r) {
 		return new EnumConverter<>(r);
 	}
-	
+
 	@Bean
 	@Qualifier("freemarker")
 	public UserConverter<String> hashTagConverter(FreemarkerRendering r) {
-		return new UserConverter<String>(UserConverter.LOW_PRIORITY, r, SymphonyUser.class);
+		return new UserConverter<>(UserConverter.LOW_PRIORITY, r, SymphonyUser.class);
 	}
 
 	@Bean
 	@Qualifier("freemarker")
 	public TimeConverter<String> timeConverter(FreemarkerRendering r) {
-		return new TimeConverter<String>(r);
+		return new TimeConverter<>(r);
 	}
-	
+
 	@Bean
 	@Qualifier("freemarker")
 	protected TextFieldConverter<String> fmTextFieldConverter(FreemarkerRendering r) {
-		return new TextFieldConverter<String>(TextFieldConverter.LOW_PRIORITY, r, String.class, 
-				Number.class, int.class, float.class, double.class, short.class, long.class, byte.class);
+		return new TextFieldConverter<>(TextFieldConverter.LOW_PRIORITY, r, String.class,
+                Number.class, int.class, float.class, double.class, short.class, long.class, byte.class);
 	}
-	
+
 	@Bean
 	@Qualifier("freemarker")
 	protected ChatConverter<String> fmRoomConverter(FreemarkerRendering r) {
-		return new ChatConverter<String>(ChatConverter.LOW_PRIORITY, r, SymphonyRoom.class, Chat.class);
+		return new ChatConverter<>(ChatConverter.LOW_PRIORITY, r, SymphonyRoom.class, Chat.class);
 	}
-	
+
 	@Bean
 	@Qualifier("freemarker")
 	protected DropdownAnnotationConverter<String> fmDropdownAnnotationConverter(FreemarkerRendering r) {
 		return new DropdownAnnotationConverter<>(r);
 	}
-	
+
 	@Bean
 	@Qualifier("freemarker")
 	protected UserConverter<String> rmUserConverter(FreemarkerRendering r) {
 		return new UserConverter<>(UserConverter.LOW_PRIORITY, r, User.class);
 	}
-	
-	
+
+
 	@Bean
 	@ConditionalOnMissingBean
 	public FreemarkerWorkTemplater formMessageMLConverter(@Qualifier("freemarker") List<TypeConverter<String>> converters, FreemarkerRendering r) {

@@ -14,17 +14,17 @@ import org.finos.springbot.workflow.response.Response;
 import org.finos.springbot.workflow.response.WorkResponse;
 
 /**
- * When returning a {@link WorkResponse} to the user, this gathers up a list 
+ * When returning a {@link WorkResponse} to the user, this gathers up a list
  * of users in the current chat that can be used to populate a drop-down.
- * 
+ *
  * @author rob@kite9.com
  *
  */
 public class UserListResponseHandler implements ResponseHandler<Void> {
-	
+
 	AllConversations conversations;
-	
-	
+
+
 	public UserListResponseHandler(AllConversations conversations) {
 		super();
 		this.conversations = conversations;
@@ -34,25 +34,25 @@ public class UserListResponseHandler implements ResponseHandler<Void> {
 	public Void apply(Response t) {
 		if (t instanceof WorkResponse wr) {
 			Class<?> c = wr.getFormClass();
-			
+
 			RequiresUserList rcl = c.getAnnotation(RequiresUserList.class);
 			if (rcl != null) {
-				
+
 				Addressable a = t.getAddress();
-				
+
 				if (a instanceof User user) {
 					// writing to a single user
-					Item i = new Item(a.getKey(), user.getName());
+					Item i = new Item(a.key(), user.getName());
 					wr.getData().put(rcl.key(), new DropdownList(Collections.singletonList(i)));
 				} else if (a instanceof Chat chat) {
 					wr.getData().put(rcl.key(), new DropdownList(
 						conversations.getChatMembers(chat).stream()
-							.map(uu -> new Item(uu.getKey(), uu.getName()))
+							.map(uu -> new Item(uu.key(), uu.getName()))
 							.collect(Collectors.toList())));
 				}
 			}
 		}
-		
+
 		return null;
 	}
 

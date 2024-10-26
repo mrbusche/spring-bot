@@ -85,9 +85,9 @@ public abstract class ChannelServiceController {
      .handle((result, exception) -> {
          if (exception == null) {
              if (result != null) {
-                 return new ResponseEntity<ResourceResponse>(
-                     result,
-                     HttpStatus.OK
+                 return new ResponseEntity<>(
+                         result,
+                         HttpStatus.OK
                  );
              }
              return new ResponseEntity<>(HttpStatus.ACCEPTED);
@@ -128,9 +128,9 @@ public abstract class ChannelServiceController {
      .handle((result, exception) -> {
          if (exception == null) {
              if (result != null) {
-                 return new ResponseEntity<ResourceResponse>(
-                     result,
-                     HttpStatus.OK
+                 return new ResponseEntity<>(
+                         result,
+                         HttpStatus.OK
                  );
              }
              return new ResponseEntity<>(HttpStatus.ACCEPTED);
@@ -171,9 +171,9 @@ public abstract class ChannelServiceController {
      .handle((result, exception) -> {
          if (exception == null) {
              if (result != null) {
-                 return new ResponseEntity<ResourceResponse>(
-                     result,
-                     HttpStatus.OK
+                 return new ResponseEntity<>(
+                         result,
+                         HttpStatus.OK
                  );
              }
              return new ResponseEntity<>(HttpStatus.ACCEPTED);
@@ -249,9 +249,9 @@ public abstract class ChannelServiceController {
      .handle((result, exception) -> {
          if (exception == null) {
              if (result != null) {
-                 return new ResponseEntity<List<ChannelAccount>>(
-                     result,
-                     HttpStatus.OK
+                 return new ResponseEntity<>(
+                         result,
+                         HttpStatus.OK
                  );
              }
              return new ResponseEntity<>(HttpStatus.ACCEPTED);
@@ -288,9 +288,9 @@ public abstract class ChannelServiceController {
      .handle((result, exception) -> {
          if (exception == null) {
              if (result != null) {
-                 return new ResponseEntity<ConversationResourceResponse>(
-                     result,
-                     HttpStatus.OK
+                 return new ResponseEntity<>(
+                         result,
+                         HttpStatus.OK
                  );
              }
              return new ResponseEntity<>(HttpStatus.ACCEPTED);
@@ -329,9 +329,9 @@ public abstract class ChannelServiceController {
      .handle((result, exception) -> {
          if (exception == null) {
              if (result != null) {
-                 return new ResponseEntity<ConversationsResult>(
-                     result,
-                     HttpStatus.OK
+                 return new ResponseEntity<>(
+                         result,
+                         HttpStatus.OK
                  );
              }
              return new ResponseEntity<>(HttpStatus.ACCEPTED);
@@ -368,9 +368,9 @@ public abstract class ChannelServiceController {
      .handle((result, exception) -> {
          if (exception == null) {
              if (result != null) {
-                 return new ResponseEntity<List<ChannelAccount>>(
-                     result,
-                     HttpStatus.OK
+                 return new ResponseEntity<>(
+                         result,
+                         HttpStatus.OK
                  );
              }
              return new ResponseEntity<>(HttpStatus.ACCEPTED);
@@ -411,9 +411,9 @@ public abstract class ChannelServiceController {
      .handle((result, exception) -> {
          if (exception == null) {
              if (result != null) {
-                 return new ResponseEntity<PagedMembersResult>(
-                     result,
-                     HttpStatus.OK
+                 return new ResponseEntity<>(
+                         result,
+                         HttpStatus.OK
                  );
              }
              return new ResponseEntity<>(HttpStatus.ACCEPTED);
@@ -488,9 +488,9 @@ public abstract class ChannelServiceController {
      .handle((result, exception) -> {
          if (exception == null) {
              if (result != null) {
-                 return new ResponseEntity<ResourceResponse>(
-                     result,
-                     HttpStatus.OK
+                 return new ResponseEntity<>(
+                         result,
+                         HttpStatus.OK
                  );
              }
              return new ResponseEntity<>(HttpStatus.ACCEPTED);
@@ -529,9 +529,9 @@ public abstract class ChannelServiceController {
      .handle((result, exception) -> {
          if (exception == null) {
              if (result != null) {
-                 return new ResponseEntity<ResourceResponse>(
-                     result,
-                     HttpStatus.OK
+                 return new ResponseEntity<>(
+                         result,
+                         HttpStatus.OK
                  );
              }
              return new ResponseEntity<>(HttpStatus.ACCEPTED);

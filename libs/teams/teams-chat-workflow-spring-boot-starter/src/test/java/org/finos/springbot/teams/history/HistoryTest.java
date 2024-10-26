@@ -28,24 +28,24 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest(classes = { 
-		DataHandlerConfig.class, 
+@SpringBootTest(classes = {
+		DataHandlerConfig.class,
 	})
 public class HistoryTest {
-	
+
 	TeamsStateStorage teamsState;
-	
+
 	TeamsHistory teamsHistory;
-	
+
 	@Autowired
 	EntityJsonConverter ejc;
-	
+
 	@BeforeEach
 	public void setUp() {
 		teamsState = new MemoryStateStorage(ejc);
 		teamsHistory = new StateStorageBasedTeamsHistory(teamsState);
 	}
-	
+
 	@Test
 	public void testGetNothing() {
 		TeamsAddressable a = new TeamsChannel("id123", "Geoff Z");
@@ -57,24 +57,24 @@ public class HistoryTest {
 		val.put("someUser", in);
 		val.put("someChannel", a);
 		val.put(StorageIDResponseHandler.STORAGE_ID_KEY, ""+new Random().nextFloat());
-		
-		Set<String> tags = new HashSet<String>();
+
+		Set<String> tags = new HashSet<>();
 		tags.addAll(TagSupport.classTags(a));
 		tags.addAll(TagSupport.classTags(in));
 		HeaderDetails hd = new HeaderDetails();
-		hd.setTags(new ArrayList<String>(tags));
+		hd.setTags(new ArrayList<>(tags));
 		val.put(HeaderDetails.KEY, hd);
-		
+
 		TeamsResponseHandler.performStorage(a, val, teamsState);
 	}
-	
+
 	@Test
 	public void testPutAndGetLast() {
 		TeamsAddressable a = new TeamsChannel("id123", "Geoff Z");
 		TeamsUser in = new TeamsUser("id123", "Geoff Z", "aad1243");
 
 		putSomeDataInHistory(a, in);
-		
+
 		Assertions.assertEquals(in, teamsHistory.getLastFromHistory(TeamsUser.class, a).get());
 		Assertions.assertEquals(a, teamsHistory.getLastFromHistory(TeamsChannel.class, a).get());
 	}
@@ -89,16 +89,16 @@ public class HistoryTest {
 		putSomeDataInHistory(a, in);
 		putSomeDataInHistory(a, in2);
 		putSomeDataInHistory(a, in3);
-		
-		
+
+
 		List<TeamsUser> allUsers = teamsHistory.getFromHistory(TeamsUser.class, a, Instant.now().minus(5l, ChronoUnit.MINUTES));
-		
+
 		Assertions.assertEquals(3, allUsers.size());
 		Assertions.assertTrue(allUsers.contains(in3));
 		Assertions.assertTrue(allUsers.contains(in2));
 		Assertions.assertTrue(allUsers.contains(in));
-		
+
 	}
-		
-	
+
+
 }

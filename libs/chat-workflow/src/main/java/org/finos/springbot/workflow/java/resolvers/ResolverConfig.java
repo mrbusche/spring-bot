@@ -27,14 +27,14 @@ public class ResolverConfig {
 
 	@Autowired
 	BeanFactory context;
-	
+
 	/**
 	 * Allows you to put any beans you like as parameters of the workflow
 	 */
 	@Bean
 	public WorkflowResolverFactory springBeanResolver() {
 		return new WorkflowResolverFactory() {
-			
+
 			@Override
 			public int getOrder() {
 				return LOW_PRIORITY;
@@ -58,7 +58,7 @@ public class ResolverConfig {
 					@Override
 					public Optional<Object> resolve(MethodParameter mp) {
 						try {
-						
+
 							Class<?> c = mp.getParameterType();
 							Object bean = context.getBean(c);
 							return Optional.of(bean);
@@ -66,36 +66,36 @@ public class ResolverConfig {
 							return Optional.empty();
 						}
 					}
-					
-					
+
+
 				};
 			}
 		};
 
-		
+
 	}
 
 	@Bean
 	@ConditionalOnMissingBean
 	public MessagePartWorkflowResolverFactory messagePartWorkflowResolverFactory() {
-		List<Class<? extends Content>> allowedTypes = new ArrayList<Class<? extends Content>>();
+		List<Class<? extends Content>> allowedTypes = new ArrayList<>();
 		allowedTypes.add(BlockQuote.class);
 		allowedTypes.add(Message.class);
 		allowedTypes.add(OrderedList.class);
 		allowedTypes.add(Paragraph.class);
 		allowedTypes.add(Word.class);
 		allowedTypes.add(UnorderedList.class);
-		
+
 		return new MessagePartWorkflowResolverFactory(allowedTypes);
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean
 	public FormDataArgumentWorkflowResolverFactory formDataArgumentWorkflowResolverFactory() {
 		return new FormDataArgumentWorkflowResolverFactory();
 	}
 
-	//to get Chat button detail in controller 
+	//to get Chat button detail in controller
 	@Bean
 	@ConditionalOnMissingBean
 	public ChatButtonWorkflowResolverFactory chatButtonWorkflowResolverFactory() {
@@ -107,13 +107,13 @@ public class ResolverConfig {
 	public ChatVariableWorkflowResolverFactory chatVariableWorkflowResolverFactory() {
 		return new ChatVariableWorkflowResolverFactory();
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean
 	public AddressableWorkflowResolverFactory addressableWorkflowResolverFactory() {
 		return new AddressableWorkflowResolverFactory();
 	}
-	
+
 	@Bean
 	@ConditionalOnMissingBean
 	public EntityMapResolverFactory entityMapResolverFactory() {
@@ -127,10 +127,10 @@ public class ResolverConfig {
 	public MessageHistoryWorkflowResolverFactory historyResolver(@Lazy AllHistory hist) {
 		return new MessageHistoryWorkflowResolverFactory(hist);
 	}
-	
+
 	@Bean
 	public WorkflowResolversFactory workflowResolversFactory() {
 		return new WorkflowResolversFactory();
 	}
-	
+
 }

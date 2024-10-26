@@ -180,11 +180,10 @@ public class ChatHandlerMethod {
 		if (this == other) {
 			return true;
 		}
-		if (!(other instanceof ChatHandlerMethod)) {
+		if (!(other instanceof ChatHandlerMethod otherMethod)) {
 			return false;
 		}
-		ChatHandlerMethod otherMethod = (ChatHandlerMethod) other;
-		return (this.bean.equals(otherMethod.bean) && this.method.equals(otherMethod.method));
+        return (this.bean.equals(otherMethod.bean) && this.method.equals(otherMethod.method));
 	}
 
 	@Override
@@ -251,6 +250,6 @@ public class ChatHandlerMethod {
 	}
 
 
-	
+
 
 }

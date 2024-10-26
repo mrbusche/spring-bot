@@ -31,18 +31,18 @@ public class TeamsHTMLParserTest {
 
 	@Autowired
 	TeamsHTMLParser parser;
-	
+
 	@MockBean
 	TeamsConversations tc;
-	
+
 	@Test
 	public void testSimpleImageMessageParse() {
 		Message m = parser.apply("<div><img src=\"https://abc.123/image.jpg\" width=\"333\" height=\"250\" alt=\"Some alt\" style=\"padding-top:5px\"></div>", null);
 		Assertions.assertEquals(1, m.only(Image.class).size());
-		Assertions.assertEquals("https://abc.123/image.jpg", m.getNth(Image.class, 0).get().getUrl());
-		Assertions.assertEquals("Some alt", m.getNth(Image.class, 0).get().getAlt());
+		Assertions.assertEquals("https://abc.123/image.jpg", m.getNth(Image.class, 0).get().url());
+		Assertions.assertEquals("Some alt", m.getNth(Image.class, 0).get().alt());
 	}
-	
+
 	@Test
 	public void testListAndBlockQuoteMarkup() {
 		Message m = parser.apply("""
@@ -58,7 +58,7 @@ public class TeamsHTMLParserTest {
 				</blockquote>
 				<p><br>
 				</p>""", null);
-		
+
 		OrderedList ul = m.getNth(OrderedList.class, 0).get();
 		Assertions.assertEquals(3, ul.getContents().size());
 		Assertions.assertEquals("formatted", ul.getNth(Paragraph.class, 2).get().getText());
@@ -66,7 +66,7 @@ public class TeamsHTMLParserTest {
 		Paragraph p = cb.getNth(Paragraph.class, 0).get();
 		Assertions.assertEquals("To be or not to be", p.getText());
 	}
-	
+
 	@Test
 	public void testMixedBlockQuoteParse() {
 		Message m = parser.apply("""
@@ -80,7 +80,7 @@ public class TeamsHTMLParserTest {
 		UnorderedList ul = bq.getNth(UnorderedList.class, 0).get();
 		Assertions.assertEquals(3, ul.size());
 	}
-	
+
 	@Test
 	public void testMention() {
 		String[] someEntities = new String[] {
@@ -90,21 +90,21 @@ public class TeamsHTMLParserTest {
 		};
 		List<Entity> entities = parseEntities(someEntities);
 		ParseContext pc = new ParseContext(new TeamsChannel("abc123", "rando"), entities);
-		
+
 		Mockito.when(tc.getTeamsChannels(Mockito.any())).thenReturn(Arrays.asList(
 				new TeamsChannel("bhhs", null)
 				));
-				
+
 		Message m = parser.apply(" <div><div><span itemscope=\"\" itemtype=\"http://schema.skype.com/Mention\" itemid=\"0\">Rob's Echo App</span>&nbsp;ask <span itemscope=\"\" itemtype=\"http://schema.skype.com/Mention\" itemid=\"1\">Suresh Rupnar</span>&nbsp;for <span itemscope=\"\" itemtype=\"http://schema.skype.com/Mention\" itemid=\"2\">General</span></div></div>", pc);
-		
+
 		List<TeamsMention> mentions1 = m.only(TeamsMention.class);
-		
+
 		Assertions.assertEquals(3, mentions1.size());
 		Assertions.assertEquals("Suresh Rupnar", mentions1.get(1).getName());
 		Assertions.assertEquals("abc123", mentions1.getFirst().getKey());
 		Assertions.assertEquals("bhhs", mentions1.get(2).getKey());
-		
-		
+
+
 	}
 
 	protected List<Entity> parseEntities(String[] someEntities) {
@@ -120,7 +120,7 @@ public class TeamsHTMLParserTest {
 			.collect(Collectors.toList());
 		return entities;
 	}
-	
+
 	@Test
 	@Disabled
 	// this disabled for now - doesn't seem to be a way for bots to read code snippets.

@@ -15,13 +15,13 @@ import org.finos.springbot.workflow.java.mapping.ChatHandlerExecutor;
 
 /**
  * Provides a resolver for parts of a message, e.g. words, paragraphs, tags.
- * 
+ *
  * @author moffrob
  *
  */
 public class MessagePartWorkflowResolverFactory implements WorkflowResolverFactory {
-	
-	
+
+
 	private final class ContentWorkflowResolver extends AbstractClassWorkflowResolver {
 		private final Map<Class<?>, Deque<Object>> parameterBuckets;
 
@@ -47,7 +47,7 @@ public class MessagePartWorkflowResolverFactory implements WorkflowResolverFacto
 
 
 	private List<Class<? extends Content>> contentClasses;
-	
+
 
 	public MessagePartWorkflowResolverFactory(List<Class<? extends Content>> contentClasses) {
 		super();
@@ -64,7 +64,7 @@ public class MessagePartWorkflowResolverFactory implements WorkflowResolverFacto
 	@Override
 	public WorkflowResolver createResolver(ChatHandlerExecutor che) {
 		Action a = che.action();
-		
+
 		if (a instanceof SimpleMessageAction action) {
 			final Map<Class<?>, Deque<Object>> parameterBuckets = setupParameterBuckets(action.getMessage());
 			return new ContentWorkflowResolver(parameterBuckets);
@@ -73,15 +73,15 @@ public class MessagePartWorkflowResolverFactory implements WorkflowResolverFacto
 		}
 	}
 
-	
+
 	protected Map<Class<?>, Deque<Object>> setupParameterBuckets(Message m) {
 		Map<Class<?>, Deque<Object>> out = new HashMap<>();
 		for (Class<? extends Content> class1 : contentClasses) {
-			Deque<Object> l = new LinkedList<Object>();
+			Deque<Object> l = new LinkedList<>();
 			l.addAll(m.only(class1));
 			out.put(class1, l);
 		}
-		
+
 		return out;
 	}
 

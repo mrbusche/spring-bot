@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public interface Content {
-	
+
 	@JsonIgnore
 	public String getText();
 
@@ -24,7 +24,7 @@ public interface Content {
 			return Collections.emptyList();
 		}
 	}
-	
+
 	/**
 	 * Returns the content structure either unaltered (if item doesn't exist within it)
 	 * or a new copy without item, or null (if item was the current content item).
@@ -36,7 +36,7 @@ public interface Content {
 			return this;
 		}
 	}
-	
+
 	/**
 	 * Returns content without item at the start. Returns the original object if the item at the start doesn't
 	 * match, or returns a changed / null content if a match was made.
@@ -48,20 +48,20 @@ public interface Content {
 			return this;
 		}
 	}
-	
+
 	/**
 	 * Replaces first match of some content with something else.
 	 */
 	public default Content replace(Content oldContent, Content newContent) {
 		if (this.matches(oldContent)) {
-			return newContent; 
+			return newContent;
 		} else {
 			return this;
 		}
  	}
-	
+
 	/**
-	 * Checks whether this content starts with item. 
+	 * Checks whether this content starts with item.
 	 */
 	public default boolean startsWith(Content item) {
 		if ((this.matches(item)) || ((item != null) && (item.matches(this)))) {
@@ -70,7 +70,7 @@ public interface Content {
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Navigates through the content structure and returns a list of all Content objects
 	 * of class x, and returns solely the nth one.
@@ -82,14 +82,14 @@ public interface Content {
 			return Optional.empty();
 		}
 	}
-	
+
 	/**
 	 * Returns true if this content is the same as another piece of content.
 	 */
 	public default boolean matches(Content other) {
 		return this.equals(other);
 	}
-	
+
 	/**
 	 * Visitor pattern
 	 */
@@ -98,13 +98,6 @@ public interface Content {
 	}
 
 	public static Content empty() {
-		return new Content() {
-
-			@Override
-			public String getText() {
-				return "";
-			}
-			
-		};
+		return () -> "";
 	}
 }

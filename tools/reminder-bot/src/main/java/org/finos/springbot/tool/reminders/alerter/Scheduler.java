@@ -32,7 +32,7 @@ public class Scheduler {
     private final ResponseHandlers responseHandlers;
     private final AllHistory h;
     private final AllConversations rooms;
-    
+
     public Scheduler(ResponseHandlers responseHandlers, AllHistory h, AllConversations rooms) {
 		super();
 		this.responseHandlers = responseHandlers;
@@ -42,15 +42,15 @@ public class Scheduler {
 
 	@Scheduled(cron = "0 0/5 * * * MON-FRI")
     public void everyFiveMinutesWeekday() {
-        onAllStreams(s -> handleFeed(s));
+        onAllStreams(this::handleFeed);
     }
-    
+
     public void onAllStreams(Consumer<Addressable> action) {
         LOG.info("TimedAlerter waking");
 
   //      if (leaderService.isLeader(self)) {
             Set<Chat> allRooms = rooms.getAllChats();
-			allRooms.forEach(s -> action.accept(s));
+			allRooms.forEach(action::accept);
             LOG.info("TimedAlerter processed " + allRooms.size() + " streams ");
 //        } else {
 //            LOG.info("Not leader, sleeping");
@@ -61,7 +61,7 @@ public class Scheduler {
     public void handleFeed(Addressable a) {
         try {
 			Optional<ReminderList> fl = h.getLastFromHistory(ReminderList.class, a);
-			
+
 			if (fl.isPresent()) {
 			    ReminderList updatedList = new ReminderList(fl.get());
 			    ZoneId zone = updatedList.getTimeZone();
@@ -76,7 +76,7 @@ public class Scheduler {
 			            Map<String, Object> ej = WorkResponse.createEntityMap(currentReminder, null, null);
 			            updatedList.getReminders().remove(currentReminder);
 			            ej.put("ReminderList", updatedList);
-			            
+
 			            WorkResponse wr = new WorkResponse(a, ej, "display-reminder", WorkMode.VIEW, Reminder.class);
 			            responseHandlers.accept(wr);
 

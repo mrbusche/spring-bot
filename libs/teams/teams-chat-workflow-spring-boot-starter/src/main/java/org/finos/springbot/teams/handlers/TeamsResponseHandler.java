@@ -48,12 +48,12 @@ import com.microsoft.bot.schema.ResourceResponse;
 import com.microsoft.bot.schema.TextFormatTypes;
 
 public class TeamsResponseHandler implements ResponseHandler<ResourceResponse>, ApplicationContextAware {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(TeamsResponseHandler.class);
-	
-	
-	
-	
+
+
+
+
 	protected AttachmentHandler attachmentHandler;
 	protected ApplicationContext ctx;
 	protected ErrorHandler eh;
@@ -62,13 +62,13 @@ public class TeamsResponseHandler implements ResponseHandler<ResourceResponse>, 
 	protected ThymeleafTemplateProvider displayTemplater;
 	protected TeamsStateStorage teamsState;
 	protected ActivityHandler ah;
-	
-	public TeamsResponseHandler( 
+
+	public TeamsResponseHandler(
 			AttachmentHandler attachmentHandler,
 			EntityMarkupTemplateProvider messageTemplater,
 			AdaptiveCardTemplateProvider workTemplater,
-			ThymeleafTemplateProvider displayTemplater, 
-			TeamsStateStorage th, 
+			ThymeleafTemplateProvider displayTemplater,
+			TeamsStateStorage th,
 			ActivityHandler ah) {
 		this.attachmentHandler = attachmentHandler;
 		this.messageTemplater = messageTemplater;
@@ -77,37 +77,36 @@ public class TeamsResponseHandler implements ResponseHandler<ResourceResponse>, 
 		this.teamsState = th;
 		this.ah = ah;
 	}
-	
+
 	protected void initErrorHandler() {
 		if (eh == null) {
 			eh = ctx.getBean(ErrorHandler.class);
 		}
-	}	
-	
+	}
+
 	enum TemplateType { ADAPTIVE_CARD, THYMELEAF, BOTH };
 
 	@Override
 	public ResourceResponse apply(Response t) {
-		if (t.getAddress() instanceof TeamsAddressable) {		
-			TeamsAddressable ta = (TeamsAddressable) t.getAddress();
+		if (t.getAddress() instanceof TeamsAddressable ta) {
 
-			try {
+            try {
 				if (t instanceof MessageResponse mr) {
 					Attachment attachment = null;
 					MarkupAndEntities mae = messageTemplater.template(mr);
 					String content = mae.getContents();
 					List<Entity> entities = mae.getEntities();
-					
+
 					if (t instanceof AttachmentResponse) {
 						attachment = attachmentHandler.formatAttachment((AttachmentResponse) mr);
 					}
-					
+
 					return sendXMLResponse(content, attachment, ta, entities, mr.getData())
 						.handle(handleErrorAndStorage(content, ta, mr.getData(), t)).get();
-					
+
 				} else if (t instanceof WorkResponse wr) {
 					TemplateType tt = getTemplateType(wr);
- 					 
+
 					if (tt == TemplateType.ADAPTIVE_CARD) {
 						JsonNode cardJson = workTemplater.template(wr);
 						return sendCardResponse(cardJson, ta, wr.getData())
@@ -119,14 +118,14 @@ public class TeamsResponseHandler implements ResponseHandler<ResourceResponse>, 
 						return sendXMLResponse(content, null, ta, entities, wr.getData())
 							.handle(handleButtonsIfNeeded(tt, wr))
 							.handle(handleErrorAndStorage(content, ta, wr.getData(), t)).get();
-						
+
 					}
 				}
 			} catch (Exception e) {
 				throw new TeamsException("Couldn't handle response " +t, e);
 			}
 		}
-		
+
 		return null;
 	}
 
@@ -144,7 +143,7 @@ public class TeamsResponseHandler implements ResponseHandler<ResourceResponse>, 
 		} else {
 			tt = TemplateType.THYMELEAF;
 		}
-		
+
 		return tt;
 	}
 
@@ -165,12 +164,12 @@ public class TeamsResponseHandler implements ResponseHandler<ResourceResponse>, 
 			try {
 				if (e == null) {
 					if (tt == TemplateType.BOTH) {
-						// we also need to send the buttons.  
+						// we also need to send the buttons.
 						JsonNode buttonsJson = workTemplater.template(null);
 						wr.getData().put(AdaptiveCardTemplateProvider.FORMID_KEY, "just-buttons");
 						JsonNode expandedJson = workTemplater.applyTemplate(buttonsJson, wr);
 						return sendCardResponse(expandedJson, (TeamsAddressable) wr.getAddress(), wr.getData()).get();
-					} else {						
+					} else {
 						return rr;
 					}
 
@@ -179,19 +178,18 @@ public class TeamsResponseHandler implements ResponseHandler<ResourceResponse>, 
 				}
 			} catch (Throwable e1) {
 				if (e instanceof CompletionException
-						&& ((CompletionException) e1).getCause() instanceof ErrorResponseException) {
-					ErrorResponseException ere = (ErrorResponseException) ((CompletionException) e1).getCause();
-					throw ere;
+						&& ((CompletionException) e1).getCause() instanceof ErrorResponseException ere) {
+                    throw ere;
 				}
 				throw new RuntimeException("Passing on exception", e1);
 			}
 		};
 	}
- 
+
 	private BiFunction<? super ResourceResponse, Throwable, ResourceResponse> handleErrorAndStorage(Object out, TeamsAddressable address, Map<String, Object> data, Response t) {
 		return (rr, e) -> {
-				if (e != null) {					
-					LOG.error("Error message for stream id {} , message: {} ", address.getKey() , e.getMessage());
+				if (e != null) {
+					LOG.error("Error message for stream id {} , message: {} ", address.key() , e.getMessage());
 					if (out instanceof ObjectNode){
 						try {
 							LOG.error("json:\n"+new ObjectMapper().writeValueAsString(out));
@@ -199,24 +197,24 @@ public class TeamsResponseHandler implements ResponseHandler<ResourceResponse>, 
 						}
 					} else {
 						LOG.error("message:\n"+out);
-					} 
-					
+					}
+
 					if(!(t  instanceof ErrorResponse)) {
 						Action.CURRENT_ACTION.set(new ErrorAction(address, data));
 					}
-					
-					initErrorHandler();				
-					eh.handleError(e);	
+
+					initErrorHandler();
+					eh.handleError(e);
 					Action.CURRENT_ACTION.set(Action.NULL_ACTION);
-					rr = new TeamsErrorResourceResponse(address.getKey(), e);
+					rr = new TeamsErrorResourceResponse(address.key(), e);
 				} else if(rr != null) {
 					performStorage(address, data, teamsState);
 				}
-				
+
 				return rr;
 			};
 	}
-	
+
 	protected CompletableFuture<ResourceResponse> sendCardResponse(JsonNode json, TeamsAddressable address, Map<String, Object> data) throws Exception {
 		Activity out = Activity.createMessageActivity();
 		Attachment body = new Attachment();
@@ -234,24 +232,24 @@ public class TeamsResponseHandler implements ResponseHandler<ResourceResponse>, 
 		if (dataKey != null) {
 			// first, store data for message
 			Map<String, String> tags = createStorageTags(data, address);
-			String file = address.getKey()+"/"+dataKey;
-			teamsState.store(file, tags, data);			
+			String file = address.key()+"/"+dataKey;
+			teamsState.store(file, tags, data);
 		}
 	}
-	
+
 	public static Map<String, String> createStorageTags(Map<String, Object> data, TeamsAddressable address) {
-		Map<String, String> out = new HashMap<String, String>();
+		Map<String, String> out = new HashMap<>();
 		HeaderDetails h = (HeaderDetails) data.get(HeaderDetails.KEY);
 		if (h != null) {
 			h.getTags().forEach(t -> out.put(t, TeamsStateStorage.PRESENT));
 		}
-		
-		out.put(TeamsStateStorage.ADDRESSABLE_KEY, address.getKey());
+
+		out.put(TeamsStateStorage.ADDRESSABLE_KEY, address.key());
 		out.put(TeamsHistory.TIMESTAMP_KEY, ""+System.currentTimeMillis());
 		return out;
 	}
-	
-	
+
+
 
 	@Override
 	public int getOrder() {

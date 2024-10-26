@@ -11,27 +11,25 @@ import org.finos.springbot.workflow.response.MessageResponse;
 import org.finos.springbot.workflow.response.handlers.ResponseHandlers;
 
 /**
- * This class allows you to configure room welcome messages.  This is not configured by default 
+ * This class allows you to configure room welcome messages.  This is not configured by default
  * and needs to be enabled.
- * 
+ *
  * @author rob@kite9.com
  *
  */
 public class RoomWelcomeEventConsumer implements ActionConsumer {
-	
+
 	private ResponseHandlers rh;
 	private final Function<MemberAction, Message> welcomeMessageBuilder;
-	
-	public final static Function<MemberAction, Message> DEFAULT_MESSAGE_BUILDER = ma -> { 
-		return Message.of("Welcome "+ma.getUser().getName()+" to "+ma.getAddressable().getName()+".  Please type /help if you want to talk to me.");
-	};
-	
+
+	public final static Function<MemberAction, Message> DEFAULT_MESSAGE_BUILDER = ma -> Message.of("Welcome "+ma.getUser().getName()+" to "+ma.getAddressable().name()+".  Please type /help if you want to talk to me.");
+
 	public RoomWelcomeEventConsumer(ResponseHandlers rh, Function<MemberAction, Message> welcomeMessageBuilder) {
 		super();
 		this.rh = rh;
 		this.welcomeMessageBuilder = welcomeMessageBuilder;
 	}
-	
+
 	public RoomWelcomeEventConsumer(ResponseHandlers rh) {
 		this(rh, DEFAULT_MESSAGE_BUILDER);
 	}
@@ -46,6 +44,6 @@ public class RoomWelcomeEventConsumer implements ActionConsumer {
 			}
 		}
 	}
-	
-	
+
+
 }

@@ -22,9 +22,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class SymphonyFormConverterTest extends AbstractFormConverterTest {
-	
+
 	SymphonyConversations sc;
-	
+
 	@Override
 	protected void before() {
 		sc = Mockito.mock(SymphonyConversations.class);
@@ -35,7 +35,7 @@ public class SymphonyFormConverterTest extends AbstractFormConverterTest {
 			protected List<PlatformConversations<Chat, User>> getDelegates() {
 				return Collections.singletonList((PlatformConversations) sc);
 			}
-			
+
 		};
 		ObjectMapper om = new ObjectMapper();
 		om.registerModule(new SymphonyFormDeserializerModule(ac));
@@ -47,20 +47,20 @@ public class SymphonyFormConverterTest extends AbstractFormConverterTest {
 	@Test
 	public void testPlatform() throws Exception {
 		before();
-		
+
 		// set up the user mapping
 		Mockito.when(sc.getUserById("345315370602462")).thenReturn(new SymphonyUser(345315370602462l));
 		Mockito.when(sc.getChatById("abc1234")).thenReturn(new SymphonyRoom("Some room", "abc1234"));
 
-		
+
 		Object o = new ObjectMapper().readValue("{\"action\": \"ob4+0\", \"hashTag.\": \"some-hashtag-value\", \"cashTag.\": \"tsla\", \"someUser.\": 345315370602462, \"chat\": \"abc1234\"}", Map.class);
 		Platform to = (Platform) fc.convert((Map<String, Object>) o, Platform.class.getCanonicalName());
 		Assertions.assertEquals("tsla", ((CashTag) to.getCashTag()).getName());
 		Assertions.assertEquals("345315370602462", ((SymphonyUser) to.getSomeUser()).getUserId());
 		Assertions.assertEquals("some-hashtag-value", ((HashTag) to.getHashTag()).getName());
-		Assertions.assertEquals("Some room", ((SymphonyRoom) to.getChat()).getName());
+		Assertions.assertEquals("Some room", ((SymphonyRoom) to.getChat()).name());
 	}
-	
+
 	@Test
 	public void testListOfStringAddValue() throws Exception {
 		before();

@@ -38,14 +38,14 @@ import com.symphony.integration.jira.event.V2Created;
 import com.symphony.integration.jira.event.v2.State;
 import com.symphony.user.Mention;
 
-@SpringBootTest(classes = { 
-		SymphonyDataHandlerCofig.class, 
+@SpringBootTest(classes = {
+		SymphonyDataHandlerCofig.class,
 })
 public class TestSerialization {
-	
+
 	@Autowired
 	EntityJsonConverter ejc;
-	
+
 	@BeforeEach
 	public void setupMapper() {
 		Arrays.asList(
@@ -62,15 +62,15 @@ public class TestSerialization {
 				new VersionSpace(Icon.class, "1.0"),
 				new VersionSpace(User.class, "1.0"))
 			.stream().forEach(vs -> ejc.addVersionSpace(vs));
-		
+
 		// specific to these crazy beans
 		ejc.getObjectMapper().setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
-		
+
 		// indent output
 		ejc.getObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
-		
+
 	}
-	
+
 	@Test
 	public void testClassWithEnum() throws Exception {
 		ClassWithEnum cwe = new ClassWithEnum();
@@ -82,36 +82,36 @@ public class TestSerialization {
 		System.out.println(json);
 		EntityJson out = ejc.readValue(json);
 		Assertions.assertEquals(ej, out);
-	
+
 	}
-	
+
 	@Test
 	public void testClassWithArray() throws Exception {
 		ClassWithArray cwe = new ClassWithArray();
-		
-		ArrayList<SubClass> vals1 = new ArrayList<SubClass>();
+
+		ArrayList<SubClass> vals1 = new ArrayList<>();
 		vals1.add(new SubClass("la1", "lb1"));
 		vals1.add(new SubClass("la2", "lb2"));
 		vals1.add(new SubClass("la3", "lb3"));
 		cwe.setL(vals1);
-		
-		ArrayList<SubClass> vals2 = new ArrayList<SubClass>();
+
+		ArrayList<SubClass> vals2 = new ArrayList<>();
 		vals2.add(new SubClass("ma1", "mb1"));
 		vals2.add(new SubClass("ma2", "mb2"));
 		vals2.add(new SubClass("ma3", "mb3"));
 		cwe.setM(vals2);
-		
-		
+
+
 		EntityJson ej = new EntityJson();
 		ej.put("cwe", cwe);
 		String json = ejc.writeValue(ej);
 		System.out.println(json);
 		EntityJson out = ejc.readValue(json);
 		Assertions.assertEquals(ej, out);
-	
+
 	}
-	
-	
+
+
 	@Test
 	public void testJiraExample1() throws Exception {
 		String json = getExpected("jira-example-1");
@@ -123,7 +123,7 @@ public class TestSerialization {
 		Assertions.assertEquals(ej.hashCode(), ej2.hashCode());
 		// ok, convert back into json
 		convertBackAndCompare(json, ej, "target/testJiraExample1");
-		
+
 	}
 
 	private void convertBackAndCompare(String expected, EntityJson actual, String file) throws JsonProcessingException, IOException, JsonMappingException {
@@ -136,27 +136,27 @@ public class TestSerialization {
 		fw2.write(expected);
 		fw2.close();
 
-		
+
 		JsonNode t1 = ejc.getObjectMapper().readTree(expected);
 		JsonNode t2 = ejc.getObjectMapper().readTree(done);
-		
+
 		Assertions.assertEquals(t1, t2);
 	}
-	
+
 	@Test
 	public void testJiraExample2() throws Exception {
 		String json = getExpected("jira-example-2");
 		EntityJson ej = ejc.readValue(json);
 		Assertions.assertEquals("Issue Test", ((Created) ej.get("jiraIssueCreated")).issue.subject);
 		Assertions.assertEquals("123456", ((Mention) ej.get("mention123")).getId().getFirst().getValue());
-		
+
 		EntityJson ej2 = ejc.readValue(json);
 		Assertions.assertEquals(ej, ej2);
 		Assertions.assertEquals(ej.hashCode(), ej2.hashCode());
 
 		convertBackAndCompare(json, ej, "target/testJiraExample2");
 	}
-	
+
 	@Test
 	public void testJiraExample3() throws Exception {
 		String json = getExpected("jira-example-3");
@@ -169,7 +169,7 @@ public class TestSerialization {
 
 		convertBackAndCompare(json, ej, "target/testJiraExample3");
 	}
-	
+
 	@Test
 	public void testSecuritiesExample() throws Exception {
 		String jsonIn = getExpected("securities-in");
@@ -183,31 +183,31 @@ public class TestSerialization {
 
 		convertBackAndCompare(jsonOut, ej, "target/testSecuritiesExample");
 	}
-	
+
 	@Test
 	public void testSecuritiesBrokenExample() throws Exception {
 		Assertions.assertThrows(UnsupportedOperationException.class, () -> {
 			// bad version numbers
-		
+
 			String json = getExpected("securities-wrong");
 			ejc.readValue(json);
-	
+
 		});
 	}
-	
+
 	@Test
 	public void testVersionMatching() {
 		VersionSpace vs = new VersionSpace(Object.class, "2.0", "1.*");
 		Assertions.assertTrue(vs.versionMatches("1.1"));
 		Assertions.assertTrue(vs.versionMatches("1.5"));
 		Assertions.assertTrue(vs.versionMatches("2.0"));
-	
+
 		VersionSpace vs2 = new VersionSpace(Object.class, "2.0", "1.[0-4]");
 		Assertions.assertTrue(vs2.versionMatches("1.1"));
 		Assertions.assertFalse(vs2.versionMatches("1.5"));
 		Assertions.assertTrue(vs2.versionMatches("2.0"));
 	}
-	
+
 	private String getExpected(String name) {
 		InputStream io = getClass().getResourceAsStream(name+".json");
 		String result = new BufferedReader(new InputStreamReader(io))

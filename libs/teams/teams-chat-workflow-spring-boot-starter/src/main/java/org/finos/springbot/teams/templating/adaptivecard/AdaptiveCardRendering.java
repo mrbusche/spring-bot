@@ -20,7 +20,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class AdaptiveCardRendering implements Rendering<JsonNode> {
-	
+
 	public static JsonNodeFactory f = new JsonNodeFactory(true);
 
 	@Override
@@ -32,19 +32,19 @@ public class AdaptiveCardRendering implements Rendering<JsonNode> {
 		out.put("wrap", true);
 		return out;
 	}
-	
+
 	protected String nullProof(Variable v) {
 		return nullProofWithFunction(v, "");
 	}
-	
+
 	protected String nullProofWithFunction(Variable v, String function) {
 		return "${if("+v.getDataPath()+","+function+"("+v.getDataPath()+"),'')}";
 	}
-	
+
 	protected String nullProofWithExtension(Variable v, String ext) {
 		return "${if("+v.getDataPath()+","+v.getDataPath()+extend(ext)+",'')}";
 	}
-	
+
 	protected String fromOption(Variable v, String ext, String options, String optionsExt, String optionsVal) {
 		return "${if("+v.getDataPath()+extend(ext)+",first(where("+options+", o, o"+extend(optionsExt)+" == "+v.getDataPath()+"))"+extend(optionsVal)+",'')}";
 	}
@@ -64,18 +64,18 @@ public class AdaptiveCardRendering implements Rendering<JsonNode> {
 			return out;
 		}
 	}
-		
+
 	@Override
 	public ObjectNode list(List<JsonNode> contents) {
 		ObjectNode out = rows("emphasis", contents);
 		return out;
 	}
-	
+
 	private ObjectNode rows(String style, List<JsonNode> rows) {
 		JsonNode[] nodes = (JsonNode[]) rows.toArray(new JsonNode[rows.size()]);
 		return rows(style, nodes);
 	}
-	
+
 	private ObjectNode rows(String style, JsonNode... rows) {
 		ObjectNode out = f.objectNode();
 		out.put("type", "Container");
@@ -83,10 +83,10 @@ public class AdaptiveCardRendering implements Rendering<JsonNode> {
 			out.put("style", style);
 		}
 		ArrayNode an = out.putArray("items");
-		Arrays.stream(rows).forEach(c -> an.add(c));
+		Arrays.stream(rows).forEach(an::add);
 		return out;
 	}
-	
+
 	private ObjectNode columns(JsonNode... items) {
 		ObjectNode out = f.objectNode();
 		out.put("type", "ColumnSet");
@@ -121,7 +121,7 @@ public class AdaptiveCardRendering implements Rendering<JsonNode> {
 			return out;
 		}
 	}
-	
+
 	public JsonNode buttons(String location) {
 		ObjectNode out = f.objectNode();
 		out.put("type", "ActionSet");
@@ -156,8 +156,8 @@ public class AdaptiveCardRendering implements Rendering<JsonNode> {
 		actions.add(submit);
 		return out;
 	}
-	
-	
+
+
 
 	@Override
 	public JsonNode renderUserDropdown(Variable variable, String optionLocation, String optionKey, String optionValue,
@@ -173,18 +173,18 @@ public class AdaptiveCardRendering implements Rendering<JsonNode> {
 			out.put("value", "${"+variable.getDataPath()+extend(variableKey)+"}");
 			out.put("id", variable.getFormFieldName());
 			ArrayNode an = out.putArray("choices");
-			
+
 			ObjectNode choice = f.objectNode();
 			choice.put("$data", "${"+location+"}");
 			choice.put("title", "${"+value+"}");
 			choice.put("value", "${"+key+"}");
 			an.add(choice);
-			
+
 			return out;
 		} else {
 			ObjectNode out = f.objectNode();
 			out.put("type", "TextBlock");
-			out.put("text", fromOption(variable, variableKey, location, key, value)); 
+			out.put("text", fromOption(variable, variableKey, location, key, value));
 			return out;
 		}
 	}
@@ -197,14 +197,14 @@ public class AdaptiveCardRendering implements Rendering<JsonNode> {
 			out.put("value", "${"+variable.getDataPath()+extend(variableKey)+"}");
 			out.put("id", variable.getFormFieldName());
 			ArrayNode an = out.putArray("choices");
-			
+
 			options.forEach((k, v) -> {
 				ObjectNode choice = f.objectNode();
 				choice.put("title", prettyPrint(v));
 				choice.put("value", k);
 				an.add(choice);
 			});
-			
+
 			return out;
 		} else {
 			ObjectNode out = f.objectNode();
@@ -239,21 +239,21 @@ public class AdaptiveCardRendering implements Rendering<JsonNode> {
 	@Override
 	public JsonNode collection(Type t, Variable v, Variable i, JsonNode in, boolean editable) {
 		if (editable) {
-			
+
 			ObjectNode cb1 = AdaptiveCardRendering.f.objectNode();
 			cb1.put("type", "Input.Toggle");
 			cb1.put("value", "false");
 			cb1.put("id", i.getFormFieldName());
-			
+
 			JsonNode cb = addFieldName("Select", cb1);
 			JsonNode edit = button("Edit", i.getFormFieldName()+"."+TableEditRow.EDIT_SUFFIX);
 			ObjectNode footer = columns(cb, edit);
 			ObjectNode out = rows("default", in, footer);
 			out.put("$data", "${"+v.getDataPath()+"}");
 			out.put(ACVariable.FORM_INCREMENT, ((ACVariable) i).formPath);
-			
+
 			JsonNode delete = button("Delete Selected", v.getFormFieldName()+"."+TableDeleteRows.ACTION_SUFFIX);
-			
+
 			return rows("", out, delete);
 		} else {
 			((ObjectNode)in).put("$data", "${"+v.getDataPath()+"}");
@@ -268,5 +268,5 @@ public class AdaptiveCardRendering implements Rendering<JsonNode> {
 		out.put("text", nullProofWithExtension(v, "name"));
 		return out;
 	}
-	
+
 }

@@ -9,7 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 /**
  * A Conversation happens inside a channel.
- * 
+ *
  * @author rob@kite9.com
  *
  */
@@ -32,14 +32,14 @@ public class TeamsConversation implements Chat, TeamsAddressable {
 	public String getMessageId() {
 		return key.substring(key.lastIndexOf("messageid=")+10);
 	}
-	
+
 	@JsonIgnore
 	public String getChannelId() {
 		return key.substring(0, key.lastIndexOf(";"));
 	}
 
 	@Override
-	public String getName() {
+	public String name() {
 		return name;
 	}
 
@@ -51,16 +51,16 @@ public class TeamsConversation implements Chat, TeamsAddressable {
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof TeamsConversation conversation) {
-			return this.key.equals(conversation.getKey());
+			return this.key.equals(conversation.key());
 		} else {
 			return false;
 		}
 	}
 
-	public String getKey() {
+	public String key() {
 		return key;
 	}
-	
+
 
 	public void setKey(String key) {
 		this.key = key;
@@ -69,5 +69,5 @@ public class TeamsConversation implements Chat, TeamsAddressable {
 	public void setName(String name) {
 		this.name = name;
 	}
-	
+
 }

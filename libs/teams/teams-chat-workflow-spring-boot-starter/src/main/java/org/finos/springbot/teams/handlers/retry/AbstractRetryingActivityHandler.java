@@ -24,16 +24,15 @@ public abstract class AbstractRetryingActivityHandler implements ActivityHandler
 	protected long teamsRetryCount = 3;
 
 	protected TeamsConversations tc;
-	
+
 	public AbstractRetryingActivityHandler(TeamsConversations tc) {
 		this.tc = tc;
 	}
 
 	protected boolean isTooManyRequest(Throwable e) {
 		if (e instanceof CompletionException exception
-				&& ((CompletionException) e).getCause() instanceof ErrorResponseException) {
-			ErrorResponseException ere = (ErrorResponseException) exception.getCause();
-			retrofit2.Response<ResponseBody> response = ere.response();
+				&& exception.getCause() instanceof ErrorResponseException ere) {
+            retrofit2.Response<ResponseBody> response = ere.response();
 			return (response.code() == HttpStatus.TOO_MANY_REQUESTS.value());
 		} else {
 			return false;
@@ -59,5 +58,5 @@ public abstract class AbstractRetryingActivityHandler implements ActivityHandler
 	    return future;
 	}
 
-	
+
 }

@@ -4,17 +4,18 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public abstract class AbstractTopLevelConverter<X, MODE> implements WithType<X>, WorkTemplater<X> {
 
 	private final List<TypeConverter<X>> converters;
 	protected final Rendering<X> r;
-	
+
 	public AbstractTopLevelConverter(List<TypeConverter<X>> fieldConverters, Rendering<X> r) {
 		this.converters = new ArrayList<>(fieldConverters);
 		this.r = r;
-		Collections.sort(this.converters, (a, b) -> Integer.compare(a.getPriority(), b.getPriority()));
+		this.converters.sort(Comparator.comparingInt(TypeConverter::getPriority));
 	}
 
 
@@ -24,8 +25,8 @@ public abstract class AbstractTopLevelConverter<X, MODE> implements WithType<X>,
 			if (fc.canConvert(ctx, t)) {
 				return fc;
 			}
-		} 
-		
+		}
+
 		throw new UnsupportedOperationException("No converter found for "+t);
 	}
 
@@ -39,22 +40,22 @@ public abstract class AbstractTopLevelConverter<X, MODE> implements WithType<X>,
 	 * This is the with-field apply.  It doesn't add any wrapper onto the output.
 	 */
 	public WithField<X> topLevelFieldOutput() {
-		
-		return new WithField<X>() {
-			
-			public X apply(Field f, boolean editMode, Variable variable, WithType<X> contentHandler) {
-				Type t = f.getGenericType();
-				return contentHandler.apply(f, AbstractTopLevelConverter.this, t, editMode, variable, topLevelFieldOutput());
-			}
 
-			@Override
-			public boolean expand() {
-				return true;
-			}
-		};
-		
+		return new WithField<>() {
+
+            public X apply(Field f, boolean editMode, Variable variable, WithType<X> contentHandler) {
+                Type t = f.getGenericType();
+                return contentHandler.apply(f, AbstractTopLevelConverter.this, t, editMode, variable, topLevelFieldOutput());
+            }
+
+            @Override
+            public boolean expand() {
+                return true;
+            }
+        };
+
 	}
-	
-	
+
+
 
 }

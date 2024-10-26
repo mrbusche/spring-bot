@@ -25,7 +25,7 @@ public class ChatButtonChatHandlerMapping extends AbstractSpringComponentHandler
 
 	private WorkflowResolversFactory wrf;
 	private ResponseConverters converters;
-	
+
 	public ChatButtonChatHandlerMapping(WorkflowResolversFactory wrf, ResponseConverters converters, AllConversations conversations) {
 		super(conversations);
 		this.wrf = wrf;
@@ -49,7 +49,7 @@ public class ChatButtonChatHandlerMapping extends AbstractSpringComponentHandler
 
 		return out;
 	}
-	
+
 	@Override
 	public List<ChatMapping<ChatButton>> getAllHandlers(Addressable a, User u) {
 		mappingRegistry.acquireReadLock();
@@ -65,85 +65,85 @@ public class ChatButtonChatHandlerMapping extends AbstractSpringComponentHandler
 	public List<ChatHandlerExecutor> getExecutors(Action a) {
 		List<ChatHandlerExecutor> out = getAllHandlers(a.getAddressable(), a.getUser()).stream()
 				.map(m -> m.getExecutor(a))
-				.filter(f -> f != null)
+				.filter(Objects::nonNull)
 				.collect(Collectors.toList());
 
 		return out;
 	}
-	
+
 	private boolean canBePerformed(Addressable a, User u, ChatButton cb) {
 		return canBePerformed(a, u, cb.excludeRooms(), cb.rooms(), cb.admin());
 	}
 
 	@Override
 	protected MappingRegistration<ChatButton> createMappingRegistration(ChatButton mapping, ChatHandlerMethod handlerMethod) {
-			
-		return new MappingRegistration<ChatButton>(mapping, handlerMethod) {
-			
-			@Override
-			public ChatHandlerExecutor getExecutor(Action a) {
-				if (a instanceof FormAction action) {
-					return matchesFormAction(action);
-				}
-				
-				return null;
-			}
 
-			private boolean canBePerformedHere(FormAction a) {
-				ChatButton cb = getMapping();
-			
-				return canBePerformed(a.getAddressable(), a.getUser(), cb);
-			}
+		return new MappingRegistration<>(mapping, handlerMethod) {
 
-			private ChatHandlerExecutor matchesFormAction(FormAction a) {
-				MappingRegistration<?> me = this;
-				
-				if(Objects.nonNull(a.getData().get("form")) && a.getData().get("form").getClass() == HelpPage.class) {
-					return null;
-				}
-					
-				if (!a.getAction().equals(this.getUniqueName())) {
-					return null;
-				}
-				
-				if (!canBePerformedHere(a)) {
-					return null;
-				}
-				
-				return new AbstractHandlerExecutor(wrf, converters) {
-					
-					@Override
-					public Map<ChatVariable, Object> getReplacements() {
-						return Collections.emptyMap();
-					}
-					
-					@Override
-					public Action action() {
-						return a;
-					}
+            @Override
+            public ChatHandlerExecutor getExecutor(Action a) {
+                if (a instanceof FormAction action) {
+                    return matchesFormAction(action);
+                }
+
+                return null;
+            }
+
+            private boolean canBePerformedHere(FormAction a) {
+                ChatButton cb = getMapping();
+
+                return canBePerformed(a.getAddressable(), a.getUser(), cb);
+            }
+
+            private ChatHandlerExecutor matchesFormAction(FormAction a) {
+                MappingRegistration<?> me = this;
+
+                if (Objects.nonNull(a.getData().get("form")) && a.getData().get("form").getClass() == HelpPage.class) {
+                    return null;
+                }
+
+                if (!a.getAction().equals(this.getUniqueName())) {
+                    return null;
+                }
+
+                if (!canBePerformedHere(a)) {
+                    return null;
+                }
+
+                return new AbstractHandlerExecutor(wrf, converters) {
+
+                    @Override
+                    public Map<ChatVariable, Object> getReplacements() {
+                        return Collections.emptyMap();
+                    }
+
+                    @Override
+                    public Action action() {
+                        return a;
+                    }
 
 
-					@Override
-					public ChatMapping<?> getOriginatingMapping() {
-						return me;
-					}
-				};
-			}
+                    @Override
+                    public ChatMapping<?> getOriginatingMapping() {
+                        return me;
+                    }
+                };
+            }
 
-			@Override
-			public boolean isButtonFor(Object o, WorkMode m) {
-				return mapping.value().isAssignableFrom(o.getClass()) && workModeMatches(m, this.getMapping().showWhen());
-					
-			}
+            @Override
+            public boolean isButtonFor(Object o, WorkMode m) {
+                return mapping.value().isAssignableFrom(o.getClass()) && workModeMatches(m, this.getMapping().showWhen());
 
-			private boolean workModeMatches(WorkMode ourMode, WorkMode buttonMode) {
-				if (buttonMode == WorkMode.BOTH) {
-					return true;
-				} else {
-					return buttonMode == ourMode;
-				}
-			}
-		};
+            }
+
+            private boolean workModeMatches(WorkMode ourMode, WorkMode buttonMode) {
+                if (buttonMode == WorkMode.BOTH) {
+                    return true;
+                } else {
+                    return buttonMode == ourMode;
+                }
+            }
+        };
 	}
 
 }

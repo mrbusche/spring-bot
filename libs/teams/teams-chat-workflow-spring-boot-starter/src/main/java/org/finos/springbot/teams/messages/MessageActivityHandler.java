@@ -32,19 +32,19 @@ import com.microsoft.bot.schema.Activity;
 import com.microsoft.bot.schema.Attachment;
 
 public class MessageActivityHandler extends TeamsActivityHandler {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(MessageActivityHandler.class);
-	
+
 	TeamsHTMLParser messageParser;
 	List<ActionConsumer> messageConsumers;
 	TeamsConversations teamsConversations;
 	TeamsStateStorage teamsStateStorage;
 	FormConverter formConverter;
 	FormValidationProcessor validationProcessor;
-	
+
 	public MessageActivityHandler(
-			List<ActionConsumer> messageConsumers, 
-			TeamsConversations teamsConversations, 
+			List<ActionConsumer> messageConsumers,
+			TeamsConversations teamsConversations,
 			TeamsStateStorage teamsStateStorage,
 			TeamsHTMLParser parser,
 			FormConverter formConverter,
@@ -67,11 +67,11 @@ public class MessageActivityHandler extends TeamsActivityHandler {
 	public void handleActivity(TurnContext turnContext) {
 		try {
 			Activity a = turnContext.getActivity();
-			
+
 			try {
 				CurrentTurnContext.CURRENT_CONTEXT.set(turnContext);
 				Action action = (a.getValue() != null) ? processForm(turnContext, a) : processMessage(turnContext, a);
-			
+
 				if (action != null) {
 					Action.CURRENT_ACTION.set(action);
 					for (ActionConsumer c : messageConsumers) {
@@ -93,16 +93,14 @@ public class MessageActivityHandler extends TeamsActivityHandler {
 		Map<String, Object> formData = (Map<String, Object>) a.getValue();
 		String formName = (String) formData.remove("form");
 		String messageId = (String) formData.remove(StorageIDResponseHandler.STORAGE_ID_KEY);
-		
+
 		Object form = formConverter.convert(formData, formName);
 		String action = (String) formData.get("action");
 		TeamsAddressable rr = teamsConversations.getTeamsAddressable(turnContext.getActivity().getConversation());
 		TeamsUser u = teamsConversations.getUser(a.getFrom());
 		TeamsAddressable from = takeUser(rr) ? u : rr;
 		Map<String, Object> data = retrieveData(messageId, from);
-		return validationProcessor.validationCheck(action, from, form, () -> {
-			return new FormAction(from, u, form, action, data);
-		});
+		return validationProcessor.validationCheck(action, from, form, () -> new FormAction(from, u, form, action, data));
 	}
 
 	private boolean takeUser(TeamsAddressable rr) {
@@ -110,18 +108,18 @@ public class MessageActivityHandler extends TeamsActivityHandler {
 	}
 
 	private Map<String, Object> retrieveData(String messageId, TeamsAddressable ta) {
-		return teamsStateStorage.retrieve(ta.getKey()+"/"+messageId).orElseGet(() -> new EntityJson());
+		return teamsStateStorage.retrieve(ta.key()+"/"+messageId).orElseGet(EntityJson::new);
 	}
 
 	protected SimpleMessageAction processMessage(TurnContext turnContext, Activity a) {
-		Object data = a.getChannelData();	
+		Object data = a.getChannelData();
 		TeamsAddressable rr = teamsConversations.getTeamsAddressable(turnContext.getActivity().getConversation());
 		TeamsUser u = teamsConversations.getUser(a.getFrom());
 		Message message = createMessageFromActivity(a, rr);
-		
+
 		rr = takeUser(rr) ? u : rr;
 		SimpleMessageAction sma = new SimpleMessageAction(rr, u, message, data);
-		
+
 		return sma;
 	}
 
@@ -136,7 +134,7 @@ public class MessageActivityHandler extends TeamsActivityHandler {
 				}
 			}
 		}
-		
+
 		return Message.of(a.getText());
 	}
 }
